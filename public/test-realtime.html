@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Realtime Pengumuman</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .pengumuman-item {
+            border: 1px solid #ddd;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+        }
+        .pengumuman-item h3 { margin: 0 0 5px 0; color: #333; }
+        .pengumuman-item p { margin: 5px 0; color: #666; }
+        .pengumuman-item small { color: #999; }
+        .status { padding: 10px; margin: 10px 0; border-radius: 5px; }
+        .connected { background-color: #d4edda; color: #155724; }
+        .disconnected { background-color: #f8d7da; color: #721c24; }
+    </style>
+</head>
+<body>
+    <h1>Test Real-time Pengumuman</h1>
+
+    <div id="status" class="status disconnected">
+        Status: Disconnected
+    </div>
+
+    <button onclick="testBroadcast()">Kirim Test Pengumuman</button>
+
+    <h2>Pengumuman Masuk:</h2>
+    <div id="pengumuman-container">
+        <!-- Pengumuman baru akan muncul di sini -->
+    </div>
+
+    <script type="module">
+        import { PengumumanRealtime } from '/build/assets/app.js';
+
+        let realtime = null;
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Inisialisasi realtime listener
+            realtime = new PengumumanRealtime();
+
+            // Update status koneksi
+            updateStatus(realtime.isConnected());
+
+            // Mulai mendengarkan
+            realtime.listen(function(data) {
+                console.log('Pengumuman baru:', data);
+                addPengumuman(data);
+                updateStatus(true);
+            });
+        });
+
+        function updateStatus(connected) {
+            const statusEl = document.getElementById('status');
+            statusEl.textContent = connected ? 'Status: Connected' : 'Status: Disconnected';
+            statusEl.className = `status ${connected ? 'connected' : 'disconnected'}`;
+        }
+
+        function addPengumuman(data) {
+            const container = document.getElementById('pengumuman-container');
+            const div = document.createElement('div');
+            div.className = 'pengumuman-item';
+            div.innerHTML = `
+                <h3>${data.judul}</h3>
+                <p>${data.deskripsi}</p>
+                <small>Dibuat pada: ${data.created_at}</small>
+            `;
+            container.insertBefore(div, container.firstChild);
+
+            // Notifikasi browser jika diizinkan
+            if ('Notification' in window && Notification.permission === 'granted') {
+                new Notification('Pengumuman Baru', {
+                    body: data.judul,
+                    icon: '/favicon.ico'
+                });
+            }
+        }
+
+        // Fungsi untuk test broadcast
+        window.testBroadcast = async function() {
+            try {
+                const response = await fetch('/api/test-broadcast', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${getAuthToken()}`, // Ganti dengan token yang valid
+                    },
+                });
+
+                if (response.ok) {
+                    alert('Test broadcast sent!');
+                } else {
+                    alert('Failed to send test broadcast');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Error sending test broadcast');
+            }
+        };
+
+        // Helper function untuk mendapatkan auth token
+        function getAuthToken() {
+            // Implementasikan logika untuk mendapatkan token dari localStorage/sessionStorage
+            // atau dari form login
+            return localStorage.getItem('auth_token') || 'YOUR_TOKEN_HERE';
+        }
+
+        // Cleanup saat halaman unload
+        window.addEventListener('beforeunload', function() {
+            if (realtime) {
+                realtime.stop();
+            }
+        });
+    </script>
+</body>
+</html>
