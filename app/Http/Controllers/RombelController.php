@@ -226,7 +226,7 @@ class RombelController extends Controller
 
     $rombel = Rombel::findOrFail($id);
 
-    $rombel->mataPelajaran()->sync($request->mapel_ids);
+    $rombel->mataPelajaran()->syncWithoutDetaching($request->mapel_ids);
 
     return response()->json([
         'message' => 'Mapel berhasil di-assign ke rombel'
@@ -234,11 +234,20 @@ class RombelController extends Controller
     }
     public function getMapel($id)
     {
-        $rombel = Rombel::with('mataPelajaran:id,nama_mapel')
-            ->findOrFail($id);
+        $rombel = Rombel::with(['mataPelajaran.guru:id,nama'])->findOrFail($id);
+
+        $data = $rombel->mataPelajaran->map(function ($mapel) {
+            return [
+                'id' => $mapel->id,
+                'nama_mapel' => $mapel->nama_mapel,
+                'kode_mapel' => $mapel->kode_mapel,
+                'deskripsi' => $mapel->deskripsi,
+                'guru' => $mapel->guru->pluck('nama')->implode(', ') ?: 'Belum ada guru',
+            ];
+        });
 
         return response()->json([
-            'data' => $rombel->mataPelajaran
+            'data' => $data
         ]);
     }
 }

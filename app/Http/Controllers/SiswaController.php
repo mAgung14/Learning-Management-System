@@ -8,47 +8,47 @@ use Illuminate\Support\Facades\DB;
 
 class SiswaController extends Controller
 {
-public function index(Request $request)
-{
-    $perKelas = $request->query('limit'); 
+    public function index(Request $request)
+    {
+        $perKelas = $request->query('limit');
 
-    $data = Siswa::select('id', 'nis', 'nama', 'jenis_kelamin', 'jurusan_id')
-        ->with([
-            'jurusan:id,nama_jurusan',
-            'rombel.kelas:id,tingkat'
-        ])
-        ->get();
+        $data = Siswa::select('id', 'nis', 'nama', 'jenis_kelamin', 'jurusan_id')
+            ->with([
+                'jurusan:id,nama_jurusan',
+                'rombel.kelas:id,tingkat'
+            ])
+            ->get();
 
-    // mapping dulu
-    $mapped = $data->map(function ($item) {
-        return [
-            'id' => $item->id,
-            'nis' => $item->nis,
-            'nama' => $item->nama,
-            'jenis_kelamin' => $item->jenis_kelamin,
-            'jurusan' => $item->jurusan->nama_jurusan ?? null,
-            'kelas' => $item->rombel->map(fn($r) => optional($r->kelas)->tingkat)->filter()->values()
-        ];
-    });
-
-    // kalau mau 3 per kelas
-    if ($perKelas) {
-        $grouped = $mapped->groupBy(function ($item) {
-            return $item['kelas'][0] ?? 'Tanpa Kelas';
-        })->map(function ($items) use ($perKelas) {
-            return $items->take($perKelas);
+        // mapping dulu
+        $mapped = $data->map(function ($item) {
+            return [
+                'id' => $item->id,
+                'nis' => $item->nis,
+                'nama' => $item->nama,
+                'jenis_kelamin' => $item->jenis_kelamin,
+                'jurusan' => $item->jurusan->nama_jurusan ?? null,
+                'kelas' => $item->rombel->map(fn($r) => optional($r->kelas)->tingkat)->filter()->values()
+            ];
         });
 
+        // kalau mau 3 per kelas
+        if ($perKelas) {
+            $grouped = $mapped->groupBy(function ($item) {
+                return $item['kelas'][0] ?? 'Tanpa Kelas';
+            })->map(function ($items) use ($perKelas) {
+                return $items->take($perKelas);
+            });
+
+            return response()->json([
+                'data' => $grouped
+            ]);
+        }
+
+        // default: semua data
         return response()->json([
-            'data' => $grouped
+            'data' => $mapped
         ]);
     }
-
-    // default: semua data
-    return response()->json([
-        'data' => $mapped
-    ]);
-}
 
     public function forGuru(Request $request)
     {
@@ -164,31 +164,56 @@ public function index(Request $request)
             'data' => $siswa->load('jurusan:id,nama_jurusan', 'rombel.kelas:id,tingkat'),
         ]);
     }
-
-    public function updateProfile(Request $request)
+    public function getProfile()
     {
         $user = auth('api')->user();
         if ($user->role !== 'siswa') {
-            return response()->json(['message' => 'Hanya siswa yang dapat mengupdate profile'], 403);
+            return response()->json(['message' => 'Hanya siswa yang dapat melihat profile'], 403);
         }
 
-        $siswa = Siswa::where('user_id', $user->id)->first();
+$siswa = Siswa::where('user_id', $user->id)->with('user:id,username,role')->first();
         if (!$siswa) {
             return response()->json(['message' => 'Data siswa tidak ditemukan'], 404);
         }
 
-        $payload = $request->validate([
-            'nama' => 'sometimes|string|max:255',
-            'jenis_kelamin' => 'sometimes|in:L,P',
-        ]);
-
-        $siswa->update($payload);
-
         return response()->json([
-            'message' => 'Profile siswa berhasil diupdate',
-            'data' => $siswa,
+            'data' => [     
+                'id' => $siswa->id,
+                'nis' => $siswa->nis,
+                'nama' => $siswa->nama,
+                'jenis_kelamin' => $siswa->jenis_kelamin,
+                'username' => $siswa->user->username,
+                'role' => $siswa->user->role,
+            ],
         ]);
     }
+
+    public function updatePassword(Request $request)
+    {
+        $user = auth('api')->user();
+        if ($user->role !== 'siswa') {
+            return response()->json(['message' => 'Hanya siswa yang dapat mengupdate password'], 403);
+        }
+
+        $payload = $request->validate([
+            'current_password' => 'required|string',
+            'password' => 'required|string|min:8|confirmed',
+        ]);
+
+        if (!\Hash::check($payload['current_password'], $user->password)) {
+            return response()->json(['message' => 'Password lama tidak cocok'], 400);
+        }
+
+        $user->update([
+            'password' => \Hash::make($payload['password']),
+        ]);
+
+        return response()->json([
+            'message' => 'Password berhasil diupdate',
+        ]);
+    }
+    
+
 
     public function mataPelajaran()
     {
@@ -207,11 +232,15 @@ public function index(Request $request)
         $rombelIds = $siswa->rombel()->pluck('rombel.id');
 
         // Ambil mata pelajaran yang ada di rombel-rombel tersebut beserta guru yang mengajar
-        $mapels = \App\Models\MataPelajaran::whereHas('rombel', function($q) use ($rombelIds) {
+        $mapels = \App\Models\MataPelajaran::whereHas('rombel', function ($q) use ($rombelIds) {
             $q->whereIn('rombel.id', $rombelIds);
-        })->with(['guru' => function($q) {
-            $q->select('guru.id', 'nama');
-        }, 'kelas', 'jurusan'])->get();
+        })->with([
+                    'guru' => function ($q) {
+                        $q->select('guru.id', 'nama');
+                    },
+                    'kelas',
+                    'jurusan'
+                ])->get();
 
         $data = $mapels->map(function ($m) {
             return [
@@ -248,12 +277,16 @@ public function index(Request $request)
 
         // Cek apakah mapel ini ada di rombel yang diikuti siswa
         $mapel = \App\Models\MataPelajaran::where('id', $id)
-            ->whereHas('rombel', function($q) use ($rombelIds) {
+            ->whereHas('rombel', function ($q) use ($rombelIds) {
                 $q->whereIn('rombel.id', $rombelIds);
             })
-            ->with(['guru' => function($q) {
-                $q->select('guru.id', 'nama');
-            }, 'kelas', 'jurusan'])
+            ->with([
+                'guru' => function ($q) {
+                    $q->select('guru.id', 'nama');
+                },
+                'kelas',
+                'jurusan'
+            ])
             ->first();
 
         if (!$mapel) {
@@ -262,9 +295,9 @@ public function index(Request $request)
 
         // Ambil materi untuk mapel ini yang sesuai dengan rombel siswa (atau materi publik untuk semua rombel di mapel ini)
         $materi = \App\Models\Materi::where('mapel_id', $id)
-            ->where(function($q) use ($rombelIds) {
+            ->where(function ($q) use ($rombelIds) {
                 $q->whereNull('rombel_id')
-                  ->orWhereIn('rombel_id', $rombelIds);
+                    ->orWhereIn('rombel_id', $rombelIds);
             })
             ->with('files')
             ->orderBy('created_at', 'desc')
@@ -277,13 +310,13 @@ public function index(Request $request)
             'deskripsi' => $mapel->deskripsi,
             'kelas' => trim(($mapel->kelas->tingkat ?? '') . ' ' . ($mapel->jurusan->nama_jurusan ?? '')),
             'guru' => $mapel->guru->pluck('nama')->implode(', ') ?: 'Belum ada guru',
-            'materi' => $materi->map(function($m) {
+            'materi' => $materi->map(function ($m) {
                 return [
                     'id' => $m->id,
                     'judul' => $m->judul,
                     'deskripsi' => $m->deskripsi,
                     'created_at' => $m->created_at,
-                    'files' => $m->files->map(function($file) {
+                    'files' => $m->files->map(function ($file) {
                         return [
                             'id' => $file->id,
                             'tipe' => $file->tipe, // PDF, VIDEO, IMAGE, FILE, YOUTUBE
@@ -317,7 +350,7 @@ public function index(Request $request)
         $rombelIds = $siswa->rombel()->pluck('rombel.id')->toArray();
 
         $mapel = \App\Models\MataPelajaran::where('id', $id)
-            ->whereHas('rombel', function($q) use ($rombelIds) {
+            ->whereHas('rombel', function ($q) use ($rombelIds) {
                 $q->whereIn('rombel.id', $rombelIds);
             })
             ->first();
@@ -328,9 +361,9 @@ public function index(Request $request)
 
         // Ambil tugas untuk mapel ini yang sesuai dengan rombel siswa (atau tugas publik untuk semua rombel di mapel ini)
         $tugas = \App\Models\Tugas::where('mapel_id', $id)
-            ->where(function($q) use ($rombelIds) {
+            ->where(function ($q) use ($rombelIds) {
                 $q->whereNull('rombel_id')
-                  ->orWhereIn('rombel_id', $rombelIds);
+                    ->orWhereIn('rombel_id', $rombelIds);
             })
             ->orderBy('deadline', 'asc')
             ->get();
@@ -382,7 +415,7 @@ public function index(Request $request)
 
         // Pastikan tugas ini milik mapel yang ada di rombel siswa atau tugasnya khusus rombel siswa
         $isMapelValid = \App\Models\MataPelajaran::where('id', $tugas->mapel_id)
-            ->whereHas('rombel', function($q) use ($rombelIds) {
+            ->whereHas('rombel', function ($q) use ($rombelIds) {
                 $q->whereIn('rombel.id', $rombelIds);
             })->exists();
 

@@ -53,29 +53,18 @@ class AuthController extends Controller
     }
     public function register(Request $request)
     {
+        $validated = $request->validate([
+            'username' => 'required|string|min:3|max:255|unique:users,username',
+            'password' => 'required|string|min:6|confirmed',
+            'nama' => 'required|string|max:255',
+            'jenis_kelamin' => 'required|in:Laki-laki,Perempuan',
+            'role' => 'nullable|in:guru,siswa',
+            'rombel_id' => 'required_if:role,siswa|exists:rombel,id',
+        ]);
+
         DB::beginTransaction();
 
         try {
-            $input = $request->all();
-
-            $validator = Validator::make($input, [
-                'username' => 'required|string|min:3|max:255|unique:users,username',
-                'password' => 'required|string|min:6|confirmed',
-                'nama' => 'required|string|max:255',
-                'jenis_kelamin' => 'required|in:Laki-laki,Perempuan',
-                'role' => 'nullable|in:guru,siswa',
-                'rombel_id' => 'required_if:role,siswa|exists:rombel,id',
-            ]);
-
-            if ($validator->fails()) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Validasi gagal',
-                    'errors' => $validator->errors(),
-                ], 422);
-            }
-
-            $validated = $validator->validated();
 
             // 🔥 create user
             $user = User::create([
@@ -146,11 +135,8 @@ class AuthController extends Controller
     public function login(Request $request)
     {
         try {
-            // Parse JSON body manually
-            $input = $request->json()->all() ?: json_decode(trim($request->getContent()), true) ?: [];
-
-            // Validasi input dengan Validator manual
-            $validator = Validator::make($input, [
+            // Validasi input
+            $validated = $request->validate([
                 'username' => 'required|string',
                 'password' => 'required|string|min:6',
             ], [
@@ -158,16 +144,6 @@ class AuthController extends Controller
                 'password.required' => 'Password harus diisi',
                 'password.min' => 'Password minimal 6 karakter',
             ]);
-
-            if ($validator->fails()) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Validasi gagal',
-                    'errors' => $validator->errors(),
-                ], 422);
-            }
-
-            $validated = $validator->validated();
 
             // Cari user berdasarkan username
             $user = User::where('username', $validated['username'])->first();

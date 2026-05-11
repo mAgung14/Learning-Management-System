@@ -8,42 +8,55 @@ use Illuminate\Http\Request;
 
 class MataPelajaranController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $data = MataPelajaran::select('id', 'nama_mapel', 'kode_mapel', 'kelas_id', 'jurusan_id')
-    ->with([
-        'kelas:id,tingkat',
-        'jurusan:id,nama_jurusan'
-    ])
-    ->get();
+        $query = MataPelajaran::select('id', 'nama_mapel', 'kode_mapel', 'kelas_id', 'jurusan_id')
+            ->with([
+                'kelas:id,tingkat',
+                'jurusan:id,nama_jurusan',
+                'guru:id,nama'
+            ]);
 
-return response()->json([
-    'data' => $data->map(function ($item) {
-        return [
-            'id' => $item->id,
-            'nama_mapel' => $item->nama_mapel,
-            'kode_mapel' => $item->kode_mapel,
-            'tingkat' => $item->kelas->tingkat ,
-            'nama_jurusan' => $item->jurusan->nama_jurusan ,
-        ];
-    })
-]);
+        if ($request->has('kelas_id') && $request->kelas_id != '') {
+            $query->where('kelas_id', $request->kelas_id);
+        }
+
+        if ($request->has('jurusan_id') && $request->jurusan_id != '') {
+            $query->where('jurusan_id', $request->jurusan_id);
+        }
+
+        $data = $query->get();
+
+        return response()->json([
+            'data' => $data->map(function ($item) {
+                return [
+                    'id' => $item->id,
+                    'nama_mapel' => $item->nama_mapel,
+                    'kode_mapel' => $item->kode_mapel,
+                    'tingkat' => $item->kelas->tingkat ?? null,
+                    'nama_jurusan' => $item->jurusan->nama_jurusan ?? null,
+                    'guru' => $item->guru->pluck('nama')->implode(', ') ?: 'Belum ada guru',
+                ];
+            })
+        ]);
     }
     public function filterMapel(Request $request)
     {
         $kelasId = $request->input('kelas_id');
         $jurusanId = $request->input('jurusan_id');
 
-    return response()->json([
-        'debug' => [
-            'kelas_id' => $kelasId,
-            'jurusan_id' => $jurusanId
-        ],
-        'data' => MataPelajaran::where('kelas_id', $kelasId)
+        // Menambahkan whereDoesntHave('guru') untuk mengecualikan mapel yang sudah di-assign ke guru manapun
+        $query = MataPelajaran::where('kelas_id', $kelasId)
             ->where('jurusan_id', $jurusanId)
-            ->select('id', 'nama_mapel')
-            ->get()
-    ]);
+            ->whereDoesntHave('guru');
+
+        return response()->json([
+            'debug' => [
+                'kelas_id' => $kelasId,
+                'jurusan_id' => $jurusanId
+            ],
+            'data' => $query->select('id', 'nama_mapel')->get()
+        ]);
     }
 
     public function store(Request $request)

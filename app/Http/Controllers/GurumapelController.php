@@ -18,8 +18,8 @@ class GuruMapelController extends Controller
 
         $guru = Guru::findOrFail($id);
 
-        // sync = replace semua
-        $guru->mapel()->sync($request->mapel_id);
+        // syncWithoutDetaching = tambah baru tanpa menghapus yang sudah ada
+        $guru->mapel()->syncWithoutDetaching($request->mapel_id);
 
         return response()->json([
             'success' => true,

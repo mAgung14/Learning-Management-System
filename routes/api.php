@@ -71,6 +71,8 @@ Route::middleware(['auth:api', 'role:siswa'])->group(function () {
     Route::get('/siswa/tugas/{tugasId}', [SiswaController::class, 'detailTugas']);
     Route::post('/pengumpulan', [PengumpulanController::class, 'store']);
     Route::delete('/siswa/pengumpulan/{id}', [PengumpulanController::class, 'batal']);
+    Route::get('/siswa/profile', [SiswaController::class, 'getProfile']);
+    Route::put('/siswa/password', [SiswaController::class, 'updatePassword']);
 });
 
 Route::middleware(['auth:api', 'role:admin'])->group(function () {
@@ -106,13 +108,12 @@ Route::prefix('guru')->group(function () {
     Route::post('/{id}/assign-mapel', [GuruMapelController::class, 'assignMapel']);
     Route::get('/{id}/mapel', [GuruMapelController::class, 'getMapel']);
     Route::delete('/{id}/mapel/{mapel_id}', [GuruMapelController::class, 'removeMapel']);
+    Route::put('/guru/profile', [GuruController::class, 'updateProfile']);
 });
 
 Route::middleware(['auth:api'])->group(function () {
     // Pengumpulan update
     Route::put('/pengumpulan/{id}', [PengumpulanController::class, 'update']);
-    Route::put('/siswa/profile', [SiswaController::class, 'updateProfile']);
-    Route::put('/guru/profile', [GuruController::class, 'updateProfile']);
     // Test route untuk broadcast pengumuman
     Route::post('/test-broadcast', function () {
         $pengumuman = \App\Models\Pengumuman::create([
