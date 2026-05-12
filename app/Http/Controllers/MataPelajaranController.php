@@ -40,6 +40,22 @@ class MataPelajaranController extends Controller
             })
         ]);
     }
+
+    public function formData()
+    {
+        return response()->json([
+            'kelas' => Kelas::select('id', 'tingkat', 'tahun_ajaran')->get(),
+            'jurusan' => \App\Models\Jurusan::select('id', 'nama_jurusan')->get(),
+            'guru' => \App\Models\Guru::select('id', 'nama', 'nik')->get(),
+            'rombel' => \App\Models\Rombel::with(['kelas:id,tingkat', 'jurusan:id,nama_jurusan'])->get()->map(function ($r) {
+                return [
+                    'id' => $r->id,
+                    'nama_rombel' => trim(($r->kelas->tingkat ?? '') . ' ' . ($r->jurusan->nama_jurusan ?? ''))
+                ];
+            }),
+        ]);
+    }
+    
     public function filterMapel(Request $request)
     {
         $kelasId = $request->input('kelas_id');
@@ -69,6 +85,14 @@ class MataPelajaranController extends Controller
             'deskripsi' => 'nullable|string',
             'kelas_id' => 'required|exists:kelas,id',
             'jurusan_id' => 'sometimes|exists:jurusan,id',
+            'guru_ids' => 'sometimes|array',
+            'guruIds' => 'sometimes|array',
+            'guru_ids.*' => 'exists:guru,id',
+            'guruIds.*' => 'exists:guru,id',
+            'rombel_ids' => 'sometimes|array',
+            'rombelIds' => 'sometimes|array',
+            'rombel_ids.*' => 'exists:rombel,id',
+            'rombelIds.*' => 'exists:rombel,id',
         ]);
 
         $data = [
@@ -81,9 +105,21 @@ class MataPelajaranController extends Controller
 
         $mapel = MataPelajaran::create($data);
 
+        // Assign ke guru (karena 1 mapel bisa diajar banyak guru)
+        $guruIds = $payload['guru_ids'] ?? $payload['guruIds'] ?? null;
+        if ($guruIds !== null) {
+            $mapel->guru()->sync($guruIds);
+        }
+
+        // Assign ke rombel (mapel diajarkan di rombel mana saja)
+        $rombelIds = $payload['rombel_ids'] ?? $payload['rombelIds'] ?? null;
+        if ($rombelIds !== null) {
+            $mapel->rombel()->sync($rombelIds);
+        }
+
         return response()->json([
             'message' => 'Mata pelajaran berhasil dibuat',
-            'data' => $mapel,
+            'data' => $mapel->load(['guru:id,nama,nik', 'rombel.kelas:id,tingkat', 'rombel.jurusan:id,nama_jurusan']),
         ], 201);
     }
 
@@ -91,7 +127,10 @@ class MataPelajaranController extends Controller
     {
         $data = MataPelajaran::with([
             'kelas:id,tingkat',
-            'jurusan:id,nama_jurusan'
+            'jurusan:id,nama_jurusan',
+            'guru:id,nama,nik',
+            'rombel.kelas:id,tingkat',
+            'rombel.jurusan:id,nama_jurusan'
         ])->findOrFail($id);
 
         return response()->json([
@@ -112,6 +151,14 @@ class MataPelajaranController extends Controller
             'kelas_id' => 'sometimes|exists:kelas,id',
             'kelasId' => 'sometimes|exists:kelas,id',
             'jurusan_id' => 'sometimes|exists:jurusan,id',
+            'guru_ids' => 'sometimes|array',
+            'guruIds' => 'sometimes|array',
+            'guru_ids.*' => 'exists:guru,id',
+            'guruIds.*' => 'exists:guru,id',
+            'rombel_ids' => 'sometimes|array',
+            'rombelIds' => 'sometimes|array',
+            'rombel_ids.*' => 'exists:rombel,id',
+            'rombelIds.*' => 'exists:rombel,id',
         ]);
 
         $data = [];
@@ -142,9 +189,20 @@ class MataPelajaranController extends Controller
 
         $mapel->update($data);
 
+        $guruIds = $payload['guru_ids'] ?? $payload['guruIds'] ?? null;
+        if ($guruIds !== null) {
+            // sync akan otomatis mereplace guru lama dengan guru yang ada di array baru ini
+            $mapel->guru()->sync($guruIds);
+        }
+
+        $rombelIds = $payload['rombel_ids'] ?? $payload['rombelIds'] ?? null;
+        if ($rombelIds !== null) {
+            $mapel->rombel()->sync($rombelIds);
+        }
+
         return response()->json([
             'message' => 'Mata pelajaran berhasil diupdate',
-            'data' => $mapel,
+            'data' => $mapel->load(['guru:id,nama,nik', 'rombel.kelas:id,tingkat', 'rombel.jurusan:id,nama_jurusan']),
         ]);
     }
 

@@ -19,6 +19,11 @@ use App\Http\Controllers\RombelController;
 use App\Http\Controllers\GuruMapelController;
 use App\Http\Controllers\PengumumanController;
 
+use Illuminate\Support\Facades\Broadcast;
+
+// Broadcasting Auth Route (Private Channels)
+Broadcast::routes(['middleware' => ['auth:api']]);
+
 // Cek apakah ada view welcome
 Route::get('/', function () {
     return view('welcome');
@@ -79,6 +84,7 @@ Route::middleware(['auth:api', 'role:admin'])->group(function () {
     Route::get('/register-form', [AuthController::class, 'registerForm']);
     Route::post('/register', [AuthController::class, 'register']);
     Route::apiResource('kelas', KelasController::class);
+    Route::get('/mata-pelajaran/form-data', [MataPelajaranController::class, 'formData']);
     Route::apiResource('mata-pelajaran', MataPelajaranController::class);
     Route::apiResource('siswa', SiswaController::class);
     Route::apiResource('guru', GuruController::class);
@@ -112,6 +118,10 @@ Route::prefix('guru')->group(function () {
 });
 
 Route::middleware(['auth:api'])->group(function () {
+    // Diskusi
+    Route::get('/diskusi/{mapel_id}', [\App\Http\Controllers\DiskusiController::class, 'index']);
+    Route::post('/diskusi/{mapel_id}', [\App\Http\Controllers\DiskusiController::class, 'store']);
+
     // Pengumpulan update
     Route::put('/pengumpulan/{id}', [PengumpulanController::class, 'update']);
     // Test route untuk broadcast pengumuman

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Guru;
 use App\Models\Materi;
 use App\Models\MataPelajaran;
+use App\Http\Requests\StoreMateriRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
@@ -16,23 +17,16 @@ class MateriController extends Controller
             'data' => Materi::with(['mapel', 'guru', 'rombel', 'files'])->get()
         ]);
     }
-
-    public function store(Request $request)
+    /**
+     * @contentType multipart/form-data
+     * @bodyParam files file[] File-file materi (array).
+     * @bodyParam file1 file File pertama.
+     * @bodyParam file2 file File kedua.
+     * @bodyParam file3 file File ketiga.
+     */
+    public function store(StoreMateriRequest $request)
     {
-        $payload = $request->validate([
-            'judul' => 'required|string|max:255',
-            'deskripsi' => 'required|string',
-            'mapel_id' => 'required|exists:mata_pelajaran,id',
-            'mapelId' => 'sometimes|exists:mata_pelajaran,id',
-            'guru_id' => 'sometimes|exists:guru,id',
-            'guruId' => 'sometimes|exists:guru,id',
-            'rombel_id' => 'sometimes|nullable|exists:rombel,id',
-            'files.*' => 'sometimes|file|max:20480' ?? null,
-            'youtube_urls.*' => 'sometimes|url' ?? null,
-            'youtube_urls' => 'sometimes' ?? null,
-            'youtube_url' => 'sometimes|url' ?? null,
-            'link_youtube' => 'sometimes|url' ?? null,
-        ]);
+        $payload = $request->validated();
 
         $user = auth('api')->user();
         $guru_id = $payload['guru_id'] ?? $payload['guruId'] ?? null;
@@ -54,8 +48,18 @@ class MateriController extends Controller
 
         $materi = Materi::create($data);
 
-        if ($request->hasFile('files')) {
-            foreach ($request->file('files') as $file) {
+        // Kumpulkan semua file dari array 'files' maupun field individu 'file1', 'file2', 'file3'
+        $allFiles = $request->file('files') ?? [];
+        if (!is_array($allFiles)) $allFiles = [$allFiles];
+
+        foreach (['file1', 'file2', 'file3'] as $fKey) {
+            if ($request->hasFile($fKey)) {
+                $allFiles[] = $request->file($fKey);
+            }
+        }
+
+        if (count($allFiles) > 0) {
+            foreach ($allFiles as $file) {
                 $path = $file->store('materi_files', 'public');
                 
                 $mimeType = $file->getClientMimeType();
@@ -117,7 +121,13 @@ class MateriController extends Controller
             'data' => Materi::with(['mapel', 'guru', 'rombel', 'files'])->findOrFail($id)
         ]);
     }
-
+    /**
+     * @contentType multipart/form-data
+     * @bodyParam files file[] File-file materi (array).
+     * @bodyParam file1 file File pertama.
+     * @bodyParam file2 file File kedua.
+     * @bodyParam file3 file File ketiga.
+     */
     public function update(Request $request, $id)
     {
         $materi = Materi::findOrFail($id);
@@ -129,7 +139,8 @@ class MateriController extends Controller
             'guru_id' => 'sometimes|exists:guru,id',
             'guruId' => 'sometimes|exists:guru,id',
             'rombel_id' => 'sometimes|nullable|exists:rombel,id',
-            'files.*' => 'sometimes|file|max:20480',
+            'files' => 'sometimes|array',
+            'files.*' => 'file|max:20480',
             'youtube_urls.*' => 'sometimes|url',
             'youtube_urls' => 'sometimes',
         ]);
@@ -159,8 +170,18 @@ class MateriController extends Controller
 
         $materi->update($data);
 
-        if ($request->hasFile('files')) {
-            foreach ($request->file('files') as $file) {
+        // Kumpulkan semua file baru
+        $allFiles = $request->file('files') ?? [];
+        if (!is_array($allFiles)) $allFiles = [$allFiles];
+
+        foreach (['file1', 'file2', 'file3'] as $fKey) {
+            if ($request->hasFile($fKey)) {
+                $allFiles[] = $request->file($fKey);
+            }
+        }
+
+        if (count($allFiles) > 0) {
+            foreach ($allFiles as $file) {
                 $path = $file->store('materi_files', 'public');
                 
                 $mimeType = $file->getClientMimeType();

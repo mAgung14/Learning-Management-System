@@ -23,21 +23,29 @@ class PengumumanCreated implements ShouldBroadcastNow
         $this->pengumuman = $pengumuman;
     }
 
-    public function broadcastOn(): Channel
+    public function broadcastOn(): array
     {
-        return new Channel('pengumuman');
+        $channels = [new Channel('pengumuman')];
+
+        if ($this->pengumuman->mapel_id) {
+            $channels[] = new Channel('pengumuman.mapel.' . $this->pengumuman->mapel_id);
+        }
+
+        return $channels;
     }
 
     public function broadcastWith(): array
     {
+        $this->pengumuman->load(['user:id,username', 'mapel:id,nama_mapel']);
+        
         return [
             'id' => $this->pengumuman->id,
             'judul' => $this->pengumuman->judul,
             'deskripsi' => $this->pengumuman->deskripsi,
             'mapel_id' => $this->pengumuman->mapel_id,
-            'anggota_kelas_id' => $this->pengumuman->anggota_kelas_id,
-            'user_id' => $this->pengumuman->user_id,
-            'created_at' => $this->pengumuman->created_at?->toDateTimeString(),
+            'nama_mapel' => $this->pengumuman->mapel?->nama_mapel,
+            'pengirim' => $this->pengumuman->user?->username,
+            'created_at' => $this->pengumuman->created_at?->diffForHumans(),
         ];
     }
 }

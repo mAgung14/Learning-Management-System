@@ -6,6 +6,7 @@ use App\Models\Absensi;
 use App\Models\Pengumpulan;
 use App\Models\Siswa;
 use App\Models\Tugas;
+use App\Http\Requests\StorePengumpulanRequest;
 use Illuminate\Http\Request;
 
 class PengumpulanController extends Controller
@@ -25,7 +26,10 @@ class PengumpulanController extends Controller
         return response()->json(['data' => Pengumpulan::with(['tugas', 'siswa', 'nilai', 'absensi'])->get()]);
     }
 
-    public function store(Request $request)
+    /**
+     * @contentType multipart/form-data
+     */
+    public function store(StorePengumpulanRequest $request)
     {
         $user = auth('api')->user();
         if ($user->role !== 'siswa') {
@@ -37,11 +41,7 @@ class PengumpulanController extends Controller
             return response()->json(['message' => 'Data siswa tidak ditemukan'], 404);
         }
 
-        $payload = $request->validate([
-            'tugas_id' => 'required|exists:tugas,id',
-            'tugasId' => 'sometimes|exists:tugas,id',
-            'file' => 'required|file|max:10240', // Maksimal 10MB
-        ]);
+        $payload = $request->validated();
 
         $tugasId = $payload['tugas_id'] ?? $payload['tugasId'];
         $tugas = Tugas::find($tugasId);
