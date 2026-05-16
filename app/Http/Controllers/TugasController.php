@@ -9,10 +9,59 @@ use Illuminate\Http\Request;
 
 class TugasController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
+        $user = auth()->user();
+        $query = Tugas::with(['pengumpulan', 'mapel']);
+
+        if ($user && $user->role === 'siswa') {
+            $siswa = $user->siswa;
+            // Ambil mapel yang ada di rombel siswa tersebut
+            $rombelIds = $siswa?->anggotaKelas()->pluck('rombel_id')->toArray() ?? [];
+            
+            if ($rombelIds) {
+                $mapelIds = \DB::table('rombel_mapel')
+                    ->whereIn('rombel_id', $rombelIds)
+                    ->pluck('mata_pelajaran_id')
+                    ->toArray();
+                
+                $query->whereIn('mapel_id', $mapelIds);
+            }
+        }
+
+        if ($user && $user->role === 'guru') {
+            $guru = $user->guru;
+            if ($guru) {
+                $mapelIds = $guru->mapel()->pluck('mata_pelajaran.id')->toArray();
+                $query->whereIn('mapel_id', $mapelIds);
+            }
+        }
+
+        $tugasList = $query->latest()->get()->map(function ($tugas) use ($user) {
+            $status = 'Belum Mengumpulkan';
+            
+            if ($user && $user->role === 'siswa') {
+                $siswaId = $user->siswa?->id;
+                $isCollected = $tugas->pengumpulan()->where('siswa_id', $siswaId)->exists();
+                
+                if ($isCollected) {
+                    $status = 'Sudah Mengumpulkan';
+                } else {
+                    // Jika belum mengumpulkan, cek apakah sudah lewat deadline
+                    if (\Carbon\Carbon::parse($tugas->deadline)->isPast()) {
+                        $status = 'Terlambat';
+                    }
+                }
+            }
+
+            // Tambahkan property status ke object tugas
+            $tugas->status_pengerjaan = $status;
+            return $tugas;
+        });
+
         return response()->json([
-            'data' => Tugas::with(['pengumpulan'])->get()
+            'success' => true,
+            'data' => $tugasList
         ]);
     }
 

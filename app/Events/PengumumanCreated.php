@@ -25,13 +25,10 @@ class PengumumanCreated implements ShouldBroadcastNow
 
     public function broadcastOn(): array
     {
-        $channels = [new Channel('pengumuman')];
-
-        if ($this->pengumuman->mapel_id) {
-            $channels[] = new Channel('pengumuman.mapel.' . $this->pengumuman->mapel_id);
-        }
-
-        return $channels;
+        // Hanya broadcast ke channel mata pelajaran spesifik
+        return [
+            new PrivateChannel('pengumuman.mapel.' . $this->pengumuman->mapel_id),
+        ];
     }
 
     public function broadcastWith(): array

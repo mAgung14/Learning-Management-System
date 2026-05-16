@@ -46,6 +46,17 @@ class PengumpulanController extends Controller
         $tugasId = $payload['tugas_id'] ?? $payload['tugasId'];
         $tugas = Tugas::find($tugasId);
 
+        if (!$tugas) {
+            return response()->json(['message' => 'Tugas tidak ditemukan'], 404);
+        }
+
+        // Cek Deadline
+        if (\Carbon\Carbon::parse($tugas->deadline)->isPast()) {
+            return response()->json([
+                'message' => 'Batas waktu pengumpulan tugas sudah berakhir pada ' . \Carbon\Carbon::parse($tugas->deadline)->format('d M Y, H:i')
+            ], 400);
+        }
+
         // Cek apakah sudah pernah mengumpulkan
         $pengumpulan = Pengumpulan::where('tugas_id', $tugasId)->where('siswa_id', $siswa->id)->first();
 
