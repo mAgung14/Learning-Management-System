@@ -28,4 +28,9 @@ class Materi extends Model
     {
         return $this->hasMany(FileMaterial::class);
     }
+
+    public function bankSoal()
+    {
+        return $this->hasMany(BankSoal::class);
+    }
 }

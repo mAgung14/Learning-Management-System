@@ -12,7 +12,8 @@ class FileMaterial extends Model
         'materi_id',
         'tipe',
         'url',
-        'nama_file'
+        'nama_file',
+        'extracted_text',
     ];
 
     public function materi()

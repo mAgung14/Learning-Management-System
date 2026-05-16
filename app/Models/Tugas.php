@@ -28,4 +28,9 @@ class Tugas extends Model
     {
         return $this->belongsTo(Rombel::class, 'rombel_id');
     }
+
+    public function bankSoal()
+    {
+        return $this->hasMany(BankSoal::class);
+    }
 }

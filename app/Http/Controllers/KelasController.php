@@ -9,6 +9,21 @@ class KelasController extends Controller
 {
      public function index()
     {
+        $user = auth('api')->user();
+
+        // Jika pemanggil adalah guru, filter kelas berdasarkan mata pelajaran yang dia ampu
+        if ($user && $user->role === 'guru') {
+            $guru = \App\Models\Guru::where('user_id', $user->id)->first();
+            if ($guru) {
+                $kelasIds = $guru->mapel()->pluck('kelas_id')->unique()->toArray();
+                $kelas = Kelas::whereIn('id', $kelasIds)->get();
+
+                return response()->json(['data' => $kelas]);
+            }
+            // Jika data guru tidak ditemukan, kembalikan array kosong
+            return response()->json(['data' => []]);
+        }
+
         return response()->json([
             'data' => Kelas::all()
         ]);
