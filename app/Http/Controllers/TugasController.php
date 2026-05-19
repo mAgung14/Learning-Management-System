@@ -373,7 +373,6 @@ class TugasController extends Controller
         $payload = $request->validate([
             'score' => 'sometimes|numeric|min:0|max:100',
             'nilai' => 'sometimes|numeric|min:0|max:100',
-            'catatan' => 'nullable|string',
         ]);
 
         $scoreValue = $payload['score'] ?? $payload['nilai'] ?? null;
@@ -398,7 +397,6 @@ class TugasController extends Controller
             [
                 'siswa_id' => $pengumpulan->siswa_id,
                 'score' => $scoreValue,
-                'catatan' => $payload['catatan'] ?? null,
             ]
         );
 

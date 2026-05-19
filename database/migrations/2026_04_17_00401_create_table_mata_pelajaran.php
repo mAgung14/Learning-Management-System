@@ -16,19 +16,6 @@ return new class extends Migration
             $table->string('nama_mapel');
             $table->string('kode_mapel')->unique(); 
             $table->text('deskripsi')->nullable(); 
-            $table->unsignedBigInteger('kelas_id');
-            $table->unsignedBigInteger('jurusan_id')->nullable();
-
-            $table->foreign('kelas_id')
-                  ->references('id') 
-                  ->on('kelas')
-                  ->onDelete('cascade'); 
-
-            $table->foreign('jurusan_id')
-                  ->references('id')
-                  ->on('jurusan')
-                  ->onDelete('set null');
-
             $table->timestamps();
         });
         

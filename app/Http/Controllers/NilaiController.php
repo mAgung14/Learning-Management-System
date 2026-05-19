@@ -24,14 +24,12 @@ class NilaiController extends Controller
             'siswa_id' => 'required|exists:siswa,id',
             'siswaId' => 'sometimes|exists:siswa,id',
             'score' => 'required|numeric|min:0',
-            'catatan' => 'nullable|string',
         ]);
 
         $nilai = Nilai::create([
             'pengumpulan_id' => $payload['pengumpulan_id'] ?? $payload['pengumpulanId'],
             'siswa_id' => $payload['siswa_id'] ?? $payload['siswaId'],
             'score' => $payload['score'],
-            'catatan' => $payload['catatan'] ?? null,
         ]);
 
         return response()->json([
@@ -52,7 +50,6 @@ class NilaiController extends Controller
         $nilai = Nilai::findOrFail($id);
         $payload = $request->validate([
             'score' => 'sometimes|numeric|min:0',
-            'catatan' => 'nullable|string',
         ]);
 
         $nilai->update($payload);

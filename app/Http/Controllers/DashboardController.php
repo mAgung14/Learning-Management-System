@@ -106,18 +106,22 @@ class DashboardController extends Controller
         $totalMapel = $mapelIds->count();
 
         // Ambil preview mata pelajaran
-        $mapelPreview = MataPelajaran::with(['kelas', 'jurusan'])
+        $mapelPreview = MataPelajaran::with(['rombel.kelas', 'rombel.jurusan'])
             ->whereIn('id', $mapelIds)
             ->get()
             ->map(function ($m) {
+                $rombel = $m->rombel->first();
+                $tingkat = $rombel->kelas->tingkat ?? '';
+                $namaJurusan = $rombel->jurusan->nama_jurusan ?? '';
+
                 return [
                     'id' => $m->id,
                     'nama_mapel' => $m->nama_mapel,
                     'kode_mapel' => $m->kode_mapel,
-                    'tingkat' => $m->kelas->tingkat ?? '',
-                    'jurusan' => $m->jurusan->nama_jurusan ?? '',
+                    'tingkat' => $tingkat,
+                    'jurusan' => $namaJurusan,
                     // Menggabungkan tingkat dan jurusan untuk judul card jika diperlukan frontend
-                    'judul_card' => trim(($m->kelas->tingkat ?? '') . ' ' . ($m->jurusan->nama_jurusan ?? '')),
+                    'judul_card' => trim($tingkat . ' ' . $namaJurusan),
                     'deskripsi' => $m->deskripsi ?? $m->nama_mapel,
                 ];
             });
@@ -200,9 +204,14 @@ class DashboardController extends Controller
             ->take(5)
             ->get();
 
+        $notifikasiTugas = $tugasTertunda > 0 
+            ? "Ada $tugasTertunda tugas yang belum dikerjakan" 
+            : "Semua tugas sudah dikerjakan";
+
         return response()->json([
             'data' => [
                 'siswa_name' => $siswa->nama,
+                'notifikasi_tugas' => $notifikasiTugas,
                 'summary' => [
                     'total_mata_pelajaran' => $totalMataPelajaran,
                     'tugas_tertunda' => $tugasTertunda,

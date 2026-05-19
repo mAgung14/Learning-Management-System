@@ -60,7 +60,7 @@ Route::middleware(['auth:api', 'role:guru'])->group(function () {
     Route::put('/guru/password', [GuruController::class, 'updatePassword']);
     Route::get('/guru/siswa', [SiswaController::class, 'forGuru']);
     Route::apiResource('guru/materi', MateriController::class);
-    Route::apiResource('pengumuman', PengumumanController::class);
+    Route::apiResource('pengumuman', PengumumanController::class)->except(['index', 'show']);
     Route::get('tugas/form-data', [TugasController::class, 'formData']);
     Route::get('tugas/{id}/pengumpulan', [TugasController::class, 'pengumpulanByTugas']);
     Route::post('pengumpulan/{pengumpulanId}/nilai', [TugasController::class, 'berikanNilai']);
@@ -131,6 +131,10 @@ Route::middleware(['auth:api'])->group(function () {
     // Diskusi
     Route::get('/diskusi/{mapel_id}', [\App\Http\Controllers\DiskusiController::class, 'index']);
     Route::post('/diskusi/{mapel_id}', [\App\Http\Controllers\DiskusiController::class, 'store']);
+
+    // Pengumuman (Bisa diakses siswa dan guru)
+    Route::get('/pengumuman', [PengumumanController::class, 'index']);
+    Route::get('/pengumuman/{pengumuman}', [PengumumanController::class, 'show']);
 
     // Pengumpulan update
     Route::put('/pengumpulan/{id}', [PengumpulanController::class, 'update']);

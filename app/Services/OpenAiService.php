@@ -7,7 +7,7 @@ use App\Models\BankSoal;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
-class GeminiService
+class OpenAiService
 {
     protected string $apiKey;
     protected string $baseUrl;
@@ -15,12 +15,12 @@ class GeminiService
 
     public function __construct()
     {
-        $this->apiKey = config('services.gemini.api_key');
-        $this->model = config('services.gemini.model', 'gemini-2.0-flash');
-        $this->baseUrl = 'https://generativelanguage.googleapis.com/v1beta/models';
+        $this->apiKey = config('services.openai.api_key');
+        $this->model = config('services.openai.model', 'gpt-4o-mini');
+        $this->baseUrl = 'https://api.openai.com/v1';
 
         if (empty($this->apiKey)) {
-            throw new \RuntimeException('Gemini API key belum dikonfigurasi. Set GEMINI_API_KEY di .env');
+            throw new \RuntimeException('OpenAI API key belum dikonfigurasi. Set OPENAI_API_KEY di .env');
         }
     }
 
@@ -48,8 +48,8 @@ class GeminiService
         $prompt = $this->buildPrompt($promptGuru, $jumlahSoal, $tingkatKesulitan);
 
         try {
-            // Kirim request ke Gemini API
-            $response = $this->callGeminiApi($prompt);
+            // Kirim request ke OpenAI API
+            $response = $this->callOpenAiApi($prompt);
             
             // Simpan raw response ke log
             $log->update(['raw_response' => json_encode($response, JSON_UNESCAPED_UNICODE)]);
@@ -77,7 +77,7 @@ class GeminiService
                 'error_message' => $e->getMessage(),
             ]);
 
-            Log::error('Gemini AI generation failed', [
+            Log::error('OpenAI generation failed', [
                 'log_id' => $log->id,
                 'error' => $e->getMessage(),
             ]);
@@ -87,7 +87,7 @@ class GeminiService
     }
 
     /**
-     * Build prompt untuk Gemini API.
+     * Build prompt untuk OpenAI API.
      */
     protected function buildPrompt(string $promptGuru, int $jumlahSoal, string $tingkatKesulitan): string
     {
@@ -148,8 +148,8 @@ INSTRUKSI GURU:
 PROMPT;
 
         try {
-            $response = $this->callGeminiApi($prompt);
-            $text = $response['candidates'][0]['content']['parts'][0]['text'] ?? null;
+            $response = $this->callOpenAiApi($prompt);
+            $text = $response['choices'][0]['message']['content'] ?? null;
             
             if (empty($text)) {
                 throw new \RuntimeException('AI tidak menghasilkan teks.');
@@ -157,47 +157,47 @@ PROMPT;
             
             return trim($text);
         } catch (\Exception $e) {
-            Log::error('Gemini AI generate deskripsi failed', ['error' => $e->getMessage()]);
+            Log::error('OpenAI generate deskripsi failed', ['error' => $e->getMessage()]);
             throw $e;
         }
     }
 
     /**
-     * Kirim request ke Gemini API.
+     * Kirim request ke OpenAI API.
      */
-    protected function callGeminiApi(string $prompt): array
+    protected function callOpenAiApi(string $prompt): array
     {
-        $url = "{$this->baseUrl}/{$this->model}:generateContent?key={$this->apiKey}";
+        $url = "{$this->baseUrl}/chat/completions";
 
-        $response = Http::timeout(120)
+        $response = Http::withToken($this->apiKey)
+            ->timeout(120)
             ->retry(2, 5000) // Retry 2 kali dengan jeda 5 detik
             ->post($url, [
-                'contents' => [
+                'model' => $this->model,
+                'messages' => [
                     [
-                        'parts' => [
-                            ['text' => $prompt],
-                        ],
+                        'role' => 'user',
+                        'content' => $prompt,
                     ],
                 ],
-                'generationConfig' => [
-                    'temperature' => 0.7,
-                    'topP' => 0.9,
-                    'maxOutputTokens' => 4096,
-                    'responseMimeType' => 'application/json',
-                ],
+                'temperature' => 0.7,
+                'max_tokens' => 4096,
+                'response_format' => [
+                    'type' => 'json_object' // Pastikan prompt meminta JSON
+                ]
             ]);
 
         if ($response->failed()) {
             $errorBody = $response->json();
-            $errorMessage = $errorBody['error']['message'] ?? 'Unknown Gemini API error';
+            $errorMessage = $errorBody['error']['message'] ?? 'Unknown OpenAI API error';
 
-            Log::error('Gemini API request failed', [
+            Log::error('OpenAI API request failed', [
                 'status' => $response->status(),
                 'error' => $errorMessage,
             ]);
 
             throw new \RuntimeException(
-                "Gemini API error ({$response->status()}): {$errorMessage}"
+                "OpenAI API error ({$response->status()}): {$errorMessage}"
             );
         }
 
@@ -205,15 +205,15 @@ PROMPT;
     }
 
     /**
-     * Parse response dari Gemini API menjadi array soal.
+     * Parse response dari OpenAI API menjadi array soal.
      */
     protected function parseAiResponse(array $response): array
     {
-        // Ambil text dari response Gemini
-        $text = $response['candidates'][0]['content']['parts'][0]['text'] ?? null;
+        // Ambil text dari response OpenAI
+        $text = $response['choices'][0]['message']['content'] ?? null;
 
         if (empty($text)) {
-            throw new \RuntimeException('Response Gemini tidak mengandung text');
+            throw new \RuntimeException('Response OpenAI tidak mengandung text');
         }
 
         // Bersihkan response - hapus markdown code blocks jika ada
@@ -251,8 +251,8 @@ PROMPT;
     }
 
     /**
-     * Bersihkan response JSON dari Gemini.
-     * Kadang Gemini mengirim response dalam markdown code block.
+     * Bersihkan response JSON dari OpenAI.
+     * Kadang OpenAI mengirim response dalam markdown code block.
      */
     protected function cleanJsonResponse(string $text): string
     {

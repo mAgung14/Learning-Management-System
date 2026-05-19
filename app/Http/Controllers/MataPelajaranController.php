@@ -10,20 +10,10 @@ class MataPelajaranController extends Controller
 {
     public function index(Request $request)
     {
-        $query = MataPelajaran::select('id', 'nama_mapel', 'kode_mapel', 'kelas_id', 'jurusan_id')
+        $query = MataPelajaran::select('id', 'nama_mapel', 'kode_mapel')
             ->with([
-                'kelas:id,tingkat',
-                'jurusan:id,nama_jurusan',
                 'guru:id,nama'
             ]);
-
-        if ($request->has('kelas_id') && $request->kelas_id != '') {
-            $query->where('kelas_id', $request->kelas_id);
-        }
-
-        if ($request->has('jurusan_id') && $request->jurusan_id != '') {
-            $query->where('jurusan_id', $request->jurusan_id);
-        }
 
         $data = $query->get();
 
@@ -33,8 +23,6 @@ class MataPelajaranController extends Controller
                     'id' => $item->id,
                     'nama_mapel' => $item->nama_mapel,
                     'kode_mapel' => $item->kode_mapel,
-                    'tingkat' => $item->kelas->tingkat ?? null,
-                    'nama_jurusan' => $item->jurusan->nama_jurusan ?? null,
                     'guru' => $item->guru->pluck('nama')->implode(', ') ?: 'Belum ada guru',
                 ];
             })
@@ -44,8 +32,6 @@ class MataPelajaranController extends Controller
     public function formData()
     {
         return response()->json([
-            'kelas' => Kelas::select('id', 'tingkat', 'tahun_ajaran')->get(),
-            'jurusan' => \App\Models\Jurusan::select('id', 'nama_jurusan')->get(),
             'guru' => \App\Models\Guru::select('id', 'nama', 'nik')->get(),
             'rombel' => \App\Models\Rombel::with(['kelas:id,tingkat', 'jurusan:id,nama_jurusan'])->get()->map(function ($r) {
                 return [
@@ -58,19 +44,10 @@ class MataPelajaranController extends Controller
     
     public function filterMapel(Request $request)
     {
-        $kelasId = $request->input('kelas_id');
-        $jurusanId = $request->input('jurusan_id');
-
         // Menambahkan whereDoesntHave('guru') untuk mengecualikan mapel yang sudah di-assign ke guru manapun
-        $query = MataPelajaran::where('kelas_id', $kelasId)
-            ->where('jurusan_id', $jurusanId)
-            ->whereDoesntHave('guru');
+        $query = MataPelajaran::whereDoesntHave('guru');
 
         return response()->json([
-            'debug' => [
-                'kelas_id' => $kelasId,
-                'jurusan_id' => $jurusanId
-            ],
             'data' => $query->select('id', 'nama_mapel')->get()
         ]);
     }
@@ -83,8 +60,6 @@ class MataPelajaranController extends Controller
             'kode_mapel' => 'required|string|max:255|unique:mata_pelajaran,kode_mapel',
             'kodeMapel' => 'sometimes|string|max:255',
             'deskripsi' => 'nullable|string',
-            'kelas_id' => 'required|exists:kelas,id',
-            'jurusan_id' => 'sometimes|exists:jurusan,id',
             'guru_ids' => 'sometimes|array',
             'guruIds' => 'sometimes|array',
             'guru_ids.*' => 'exists:guru,id',
@@ -99,9 +74,7 @@ class MataPelajaranController extends Controller
             'nama_mapel' => $payload['nama_mapel'] ?? $payload['namaMapel'],
             'kode_mapel' => $payload['kode_mapel'] ?? $payload['kodeMapel'],
             'deskripsi' => $payload['deskripsi'] ?? null,
-            'kelas_id' => $payload['kelas_id'],
-            'jurusan_id' => $payload['jurusan_id'],
-        ];
+            ];
 
         $mapel = MataPelajaran::create($data);
 
@@ -126,8 +99,6 @@ class MataPelajaranController extends Controller
     public function show($id)
     {
         $data = MataPelajaran::with([
-            'kelas:id,tingkat',
-            'jurusan:id,nama_jurusan',
             'guru:id,nama,nik',
             'rombel.kelas:id,tingkat',
             'rombel.jurusan:id,nama_jurusan'
@@ -148,9 +119,6 @@ class MataPelajaranController extends Controller
             'kode_mapel' => 'sometimes|string|max:255|unique:mata_pelajaran,kode_mapel,' . $mapel->id,
             'kodeMapel' => 'sometimes|string|max:255',
             'deskripsi' => 'nullable|string',
-            'kelas_id' => 'sometimes|exists:kelas,id',
-            'kelasId' => 'sometimes|exists:kelas,id',
-            'jurusan_id' => 'sometimes|exists:jurusan,id',
             'guru_ids' => 'sometimes|array',
             'guruIds' => 'sometimes|array',
             'guru_ids.*' => 'exists:guru,id',
@@ -176,15 +144,6 @@ class MataPelajaranController extends Controller
         }
         if (array_key_exists('deskripsi', $payload)) {
             $data['deskripsi'] = $payload['deskripsi'];
-        }
-        if (isset($payload['kelas_id'])) {
-            $data['kelas_id'] = $payload['kelas_id'];
-        }
-        if (isset($payload['kelasId'])) {
-            $data['kelas_id'] = $payload['kelasId'];
-        }
-        if (isset($payload['jurusan_id'])) {
-            $data['jurusan_id'] = $payload['jurusan_id'];
         }
 
         $mapel->update($data);

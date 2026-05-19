@@ -5,7 +5,7 @@ namespace App\Jobs;
 use App\Models\AiGenerateLog;
 use App\Models\Materi;
 use App\Models\Tugas;
-use App\Services\GeminiService;
+use App\Services\OpenAiService;
 use App\Services\PdfExtractorService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -46,7 +46,7 @@ class GenerateSoalAiJob implements ShouldQueue
     /**
      * Execute the job.
      */
-    public function handle(GeminiService $gemini): void
+    public function handle(OpenAiService $openAi): void
     {
         // Ambil atau buat log record
         $log = $this->logId
@@ -60,13 +60,13 @@ class GenerateSoalAiJob implements ShouldQueue
             ]);
 
         try {
-            // 1. Langsung kirim instruksi (prompt) ke Gemini AI
-            Log::info("GenerateSoalAiJob: Sending prompt to Gemini AI", [
+            // 1. Langsung kirim instruksi (prompt) ke OpenAI API
+            Log::info("GenerateSoalAiJob: Sending prompt to OpenAI API", [
                 'prompt_length' => strlen($this->prompt),
                 'jumlah_soal' => $this->jumlahSoal,
             ]);
 
-            $soalList = $gemini->generateSoalEssay(
+            $soalList = $openAi->generateSoalEssay(
                 $this->prompt,
                 $this->jumlahSoal,
                 $this->tingkatKesulitan,
@@ -78,7 +78,7 @@ class GenerateSoalAiJob implements ShouldQueue
                 'count' => count($soalList),
             ]);
 
-            $savedSoal = $gemini->saveSoalToDatabase(
+            $savedSoal = $openAi->saveSoalToDatabase(
                 $soalList,
                 $this->tugasId,
                 $this->materiId,

@@ -16,7 +16,6 @@ return new class extends Migration
             $table->foreignId('pengumpulan_id')->constrained('pengumpulan')->cascadeOnDelete();
             $table->foreignId('siswa_id')->constrained('siswa')->cascadeOnDelete();
             $table->integer('score');
-            $table->text('catatan')->nullable();
             $table->timestamps();
         });
     }

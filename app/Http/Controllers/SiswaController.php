@@ -238,17 +238,18 @@ $siswa = Siswa::where('user_id', $user->id)->with('user:id,username,role')->firs
                     'guru' => function ($q) {
                         $q->select('guru.id', 'nama');
                     },
-                    'kelas',
-                    'jurusan'
+                    'rombel.kelas',
+                    'rombel.jurusan'
                 ])->get();
 
         $data = $mapels->map(function ($m) {
+            $rombel = $m->rombel->first();
             return [
                 'id' => $m->id,
                 'nama_mapel' => $m->nama_mapel,
                 'kode_mapel' => $m->kode_mapel,
                 'deskripsi' => $m->deskripsi,
-                'kelas' => trim(($m->kelas->tingkat ?? '') . ' ' . ($m->jurusan->nama_jurusan ?? '')),
+                'kelas' => trim(($rombel->kelas->tingkat ?? '') . ' ' . ($rombel->jurusan->nama_jurusan ?? '')),
                 'guru' => $m->guru->pluck('nama')->implode(', ') ?: 'Belum ada guru',
             ];
         });
@@ -284,8 +285,8 @@ $siswa = Siswa::where('user_id', $user->id)->with('user:id,username,role')->firs
                 'guru' => function ($q) {
                     $q->select('guru.id', 'nama');
                 },
-                'kelas',
-                'jurusan'
+                'rombel.kelas',
+                'rombel.jurusan'
             ])
             ->first();
 
@@ -303,13 +304,30 @@ $siswa = Siswa::where('user_id', $user->id)->with('user:id,username,role')->firs
             ->orderBy('created_at', 'desc')
             ->get();
 
+        $rombel = $mapel->rombel->first();
+
+        // Hitung jumlah tugas yang belum dikerjakan untuk mapel ini
+        $tugasIds = \App\Models\Tugas::where('mapel_id', $id)
+            ->where(function ($q) use ($rombelIds) {
+                $q->whereNull('rombel_id')
+                    ->orWhereIn('rombel_id', $rombelIds);
+            })->pluck('id')->toArray();
+
+        $tugasSelesai = \App\Models\Pengumpulan::where('siswa_id', $siswa->id)
+            ->whereIn('tugas_id', $tugasIds)
+            ->distinct('tugas_id')
+            ->count('tugas_id');
+
+        $tugasTertunda = max(0, count($tugasIds) - $tugasSelesai);
+
         $data = [
             'id' => $mapel->id,
             'nama_mapel' => $mapel->nama_mapel,
             'kode_mapel' => $mapel->kode_mapel,
             'deskripsi' => $mapel->deskripsi,
-            'kelas' => trim(($mapel->kelas->tingkat ?? '') . ' ' . ($mapel->jurusan->nama_jurusan ?? '')),
+            'kelas' => trim(($rombel->kelas->tingkat ?? '') . ' ' . ($rombel->jurusan->nama_jurusan ?? '')),
             'guru' => $mapel->guru->pluck('nama')->implode(', ') ?: 'Belum ada guru',
+            'tugas_tertunda' => $tugasTertunda,
             'materi' => $materi->map(function ($m) {
                 return [
                     'id' => $m->id,
@@ -382,11 +400,14 @@ $siswa = Siswa::where('user_id', $user->id)->with('user:id,username,role')->firs
             ];
         });
 
+        $tugasTertunda = $tugasWithStatus->where('status_pengumpulan', 'Belum dikumpulkan')->count();
+
         return response()->json([
             'success' => true,
             'data' => [
                 'mapel_id' => $mapel->id,
                 'nama_mapel' => $mapel->nama_mapel,
+                'tugas_tertunda' => $tugasTertunda,
                 'tugas' => $tugasWithStatus
             ]
         ]);
@@ -407,7 +428,7 @@ $siswa = Siswa::where('user_id', $user->id)->with('user:id,username,role')->firs
 
         $rombelIds = $siswa->rombel()->pluck('rombel.id')->toArray();
 
-        $tugas = \App\Models\Tugas::with(['mapel.kelas', 'mapel.jurusan', 'guru'])->find($tugasId);
+        $tugas = \App\Models\Tugas::with(['mapel.rombel.kelas', 'mapel.rombel.jurusan', 'guru'])->find($tugasId);
 
         if (!$tugas) {
             return response()->json(['message' => 'Tugas tidak ditemukan.'], 404);
@@ -432,13 +453,15 @@ $siswa = Siswa::where('user_id', $user->id)->with('user:id,username,role')->firs
             ->where('siswa_id', $siswa->id)
             ->first();
 
+        $rombelTugas = $tugas->mapel->rombel->first();
+
         $data = [
             'id' => $tugas->id,
             'judul' => $tugas->judul,
             'deskripsi' => $tugas->deskripsi,
             'deadline' => $tugas->deadline,
             'nama_mapel' => $tugas->mapel->nama_mapel,
-            'kelas' => trim(($tugas->mapel->kelas->tingkat ?? '') . ' ' . ($tugas->mapel->jurusan->nama_jurusan ?? '')),
+            'kelas' => trim(($rombelTugas->kelas->tingkat ?? '') . ' ' . ($rombelTugas->jurusan->nama_jurusan ?? '')),
             'guru' => $tugas->guru->nama ?? 'Unknown',
             'pengumpulan' => $pengumpulan ? [
                 'id' => $pengumpulan->id,

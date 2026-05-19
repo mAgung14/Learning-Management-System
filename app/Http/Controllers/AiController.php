@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Services\GeminiService;
+use App\Services\OpenAiService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -12,14 +12,14 @@ class AiController extends Controller
      * Generate deskripsi tugas berdasarkan prompt guru secara synchronous.
      * Tidak menyimpan ke database, langsung return hasil AI.
      */
-    public function generateDeskripsi(Request $request, GeminiService $gemini): JsonResponse
+    public function generateDeskripsi(Request $request, OpenAiService $openAi): JsonResponse
     {
         $request->validate([
             'prompt' => 'required|string|min:5',
         ]);
 
         try {
-            $deskripsi = $gemini->generateDeskripsi($request->prompt);
+            $deskripsi = $openAi->generateDeskripsi($request->prompt);
 
             return response()->json([
                 'success' => true,

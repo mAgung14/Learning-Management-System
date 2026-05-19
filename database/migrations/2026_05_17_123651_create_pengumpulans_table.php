@@ -16,9 +16,7 @@ return new class extends Migration
             $table->foreignId('tugas_id')->constrained('tugas')->cascadeOnDelete();
             $table->foreignId('siswa_id')->constrained('siswa')->cascadeOnDelete();
             $table->string('file')->nullable();
-            $table->text('catatan')->nullable();
             $table->integer('nilai')->nullable();
-            $table->text('feedback')->nullable();
             $table->timestamp('submitted_at')->nullable();
             $table->timestamps();
 });

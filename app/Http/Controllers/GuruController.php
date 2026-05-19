@@ -147,7 +147,7 @@ class GuruController extends Controller
             return response()->json(['message' => 'Data guru tidak ditemukan.'], 404);
         }
 
-        $mapels = $guru->mapel()->with(['kelas', 'jurusan'])->get();
+        $mapels = $guru->mapel()->with(['rombel.kelas', 'rombel.jurusan'])->get();
 
         $data = $mapels->map(function ($m) {
             // Menghitung total siswa di semua rombel yang terkait dengan mapel ini
@@ -156,11 +156,16 @@ class GuruController extends Controller
                 ->where('rombel_mapel.mata_pelajaran_id', $m->id)
                 ->count();
 
+            $rombel = $m->rombel->first();
+            $tingkat = $rombel->kelas->tingkat ?? '';
+            $namaJurusan = $rombel->jurusan->nama_jurusan ?? '';
+            $tahunAjaran = $rombel->kelas->tahun_ajaran ?? '';
+
             return [
                 'id' => $m->id,
                 'nama_mapel' => $m->nama_mapel,
-                'tahun_ajaran' => $m->kelas->tahun_ajaran ?? '',
-                'nama_kelas' => trim(($m->kelas->tingkat ?? '') . ' ' . ($m->jurusan->nama_jurusan ?? '')),
+                'tahun_ajaran' => $tahunAjaran,
+                'nama_kelas' => trim($tingkat . ' ' . $namaJurusan),
                 'jumlah_siswa' => $jumlahSiswa,
             ];
         });

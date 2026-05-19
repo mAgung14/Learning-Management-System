@@ -16,6 +16,10 @@ class PengumumanController extends Controller
         $user = auth()->user();
         $query = Pengumuman::with(['user:id,username,role', 'mapel:id,nama_mapel', 'anggotaKelas.siswa:id,nis,nama', 'anggotaKelas.rombel:id,kelas_id,jurusan_id']);
 
+        if ($request->filled('mapel_id')) {
+            $query->where('mapel_id', $request->mapel_id);
+        }
+
         if ($user && $user->role === 'siswa') {
             $siswa = $user->siswa;
             $anggotaKelasIds = $siswa?->anggotaKelas()->pluck('anggota_kelas.id')->toArray() ?? [];
