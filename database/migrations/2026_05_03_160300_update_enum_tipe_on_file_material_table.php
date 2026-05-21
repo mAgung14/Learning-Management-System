@@ -13,7 +13,9 @@ return new class extends Migration
     public function up(): void
     {
         // Altering ENUM using raw SQL to avoid needing doctrine/dbal
-        DB::statement("ALTER TABLE file_material MODIFY COLUMN tipe ENUM('FILE', 'VIDEO', 'IMAGE', 'PDF') NOT NULL");
+        if (DB::getDriverName() !== 'sqlite') {
+            DB::statement("ALTER TABLE file_material MODIFY COLUMN tipe ENUM('FILE', 'VIDEO', 'IMAGE', 'PDF') NOT NULL");
+        }
     }
 
     /**
@@ -21,6 +23,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        DB::statement("ALTER TABLE file_material MODIFY COLUMN tipe ENUM('FILE', 'VIDEO') NOT NULL");
+        if (DB::getDriverName() !== 'sqlite') {
+            DB::statement("ALTER TABLE file_material MODIFY COLUMN tipe ENUM('FILE', 'VIDEO') NOT NULL");
+        }
     }
 };

@@ -11,7 +11,9 @@ return new class extends Migration
     public function up(): void
     {
         // Menambahkan YOUTUBE ke dalam tipe ENUM
-        DB::statement("ALTER TABLE file_material MODIFY COLUMN tipe ENUM('FILE', 'VIDEO', 'IMAGE', 'PDF', 'YOUTUBE') NOT NULL");
+        if (DB::getDriverName() !== 'sqlite') {
+            DB::statement("ALTER TABLE file_material MODIFY COLUMN tipe ENUM('FILE', 'VIDEO', 'IMAGE', 'PDF', 'YOUTUBE') NOT NULL");
+        }
     }
 
     /**
@@ -19,6 +21,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        DB::statement("ALTER TABLE file_material MODIFY COLUMN tipe ENUM('FILE', 'VIDEO', 'IMAGE', 'PDF') NOT NULL");
+        if (DB::getDriverName() !== 'sqlite') {
+            DB::statement("ALTER TABLE file_material MODIFY COLUMN tipe ENUM('FILE', 'VIDEO', 'IMAGE', 'PDF') NOT NULL");
+        }
     }
 };

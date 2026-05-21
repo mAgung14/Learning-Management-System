@@ -480,7 +480,15 @@ $siswa = Siswa::where('user_id', $user->id)->with('user:id,username,role')->firs
 
     public function destroy($id)
     {
-        Siswa::destroy($id);
+        $siswa = Siswa::findOrFail($id);
+
+        DB::transaction(function () use ($siswa) {
+            if ($siswa->user_id) {
+                \App\Models\User::destroy($siswa->user_id);
+            } else {
+                $siswa->delete();
+            }
+        });
 
         return response()->json([
             'message' => 'Data siswa berhasil dihapus'

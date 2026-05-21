@@ -93,6 +93,8 @@ Route::middleware(['auth:api', 'role:siswa'])->group(function () {
 Route::middleware(['auth:api', 'role:admin'])->group(function () {
     Route::get('/register-form', [AuthController::class, 'registerForm']);
     Route::post('/register', [AuthController::class, 'register']);
+    Route::post('/siswa/import', [\App\Http\Controllers\UserImportController::class, 'importSiswa']);
+    Route::post('/guru/import', [\App\Http\Controllers\UserImportController::class, 'importGuru']);
     Route::apiResource('kelas', KelasController::class);
     Route::get('/mata-pelajaran/form-data', [MataPelajaranController::class, 'formData']);
     Route::apiResource('mata-pelajaran', MataPelajaranController::class);

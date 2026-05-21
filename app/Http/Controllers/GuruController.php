@@ -127,7 +127,15 @@ class GuruController extends Controller
 
     public function destroy($id)
     {
-        Guru::destroy($id);
+        $guru = Guru::findOrFail($id);
+
+        DB::transaction(function () use ($guru) {
+            if ($guru->user_id) {
+                \App\Models\User::destroy($guru->user_id);
+            } else {
+                $guru->delete();
+            }
+        });
 
         return response()->json([
             'message' => 'Data guru berhasil dihapus'
