@@ -250,4 +250,92 @@ class RombelController extends Controller
             'data' => $data
         ]);
     }
+
+    public function promote(Request $request)
+    {
+        $request->validate([
+            'source_rombel_id' => 'required|exists:rombel,id',
+            'target_rombel_id' => 'required|exists:rombel,id',
+        ]);
+
+        $sourceRombel = Rombel::findOrFail($request->source_rombel_id);
+        $targetRombel = Rombel::findOrFail($request->target_rombel_id);
+
+        // Ambil semua siswa di rombel asal
+        $anggotaList = AnggotaKelas::where('rombel_id', $sourceRombel->id)->get();
+        $totalSiswa = $anggotaList->count();
+
+        if ($totalSiswa === 0) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Tidak ada siswa di rombel asal untuk dipromosikan.'
+            ], 400);
+        }
+
+        \DB::transaction(function () use ($anggotaList, $targetRombel) {
+            foreach ($anggotaList as $anggota) {
+                // Update rombel_id ke target rombel
+                $anggota->update([
+                    'rombel_id' => $targetRombel->id
+                ]);
+
+                // Sinkronkan jurusan siswa dengan jurusan rombel baru
+                if ($anggota->siswa) {
+                    $anggota->siswa->update([
+                        'jurusan_id' => $targetRombel->jurusan_id
+                    ]);
+                }
+            }
+        });
+
+        return response()->json([
+            'success' => true,
+            'message' => "Berhasil mempromosikan {$totalSiswa} siswa ke rombel tujuan.",
+            'total_promoted' => $totalSiswa
+        ]);
+    }
+
+    public function graduate(Request $request)
+    {
+        $request->validate([
+            'rombel_id' => 'required|exists:rombel,id',
+            'action' => 'required|in:delete,detach',
+        ]);
+
+        $rombelId = $request->rombel_id;
+        $action = $request->action;
+
+        $siswaIds = AnggotaKelas::where('rombel_id', $rombelId)->pluck('siswa_id')->toArray();
+        $totalSiswa = count($siswaIds);
+
+        if ($totalSiswa === 0) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Tidak ada siswa di rombel tersebut untuk diproses kelulusan.'
+            ], 400);
+        }
+
+        if ($action === 'delete') {
+            $siswas = Siswa::whereIn('id', $siswaIds)->get();
+            \DB::transaction(function () use ($siswas) {
+                foreach ($siswas as $siswa) {
+                    if ($siswa->user_id) {
+                        \App\Models\User::destroy($siswa->user_id);
+                    } else {
+                        $siswa->delete();
+                    }
+                }
+            });
+        } elseif ($action === 'detach') {
+            AnggotaKelas::where('rombel_id', $rombelId)->delete();
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => $action === 'delete' 
+                ? "Berhasil meluluskan & menghapus {$totalSiswa} siswa beserta akunnya."
+                : "Berhasil meluluskan (mengeluarkan) {$totalSiswa} siswa dari rombel aktif (menjadi alumni).",
+            'total_processed' => $totalSiswa
+        ]);
+    }
 }

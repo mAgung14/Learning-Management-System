@@ -157,26 +157,27 @@ class GuruController extends Controller
 
         $mapels = $guru->mapel()->with(['rombel.kelas', 'rombel.jurusan'])->get();
 
-        $data = $mapels->map(function ($m) {
-            // Menghitung total siswa di semua rombel yang terkait dengan mapel ini
-            $jumlahSiswa = DB::table('anggota_kelas')
-                ->join('rombel_mapel', 'anggota_kelas.rombel_id', '=', 'rombel_mapel.rombel_id')
-                ->where('rombel_mapel.mata_pelajaran_id', $m->id)
-                ->count();
+        $data = $mapels->flatMap(function ($m) {
+            return $m->rombel->map(function ($rombel) use ($m) {
+                // Menghitung total siswa di rombel yang terkait dengan mapel ini
+                $jumlahSiswa = DB::table('anggota_kelas')
+                    ->where('rombel_id', $rombel->id)
+                    ->count();
 
-            $rombel = $m->rombel->first();
-            $tingkat = $rombel->kelas->tingkat ?? '';
-            $namaJurusan = $rombel->jurusan->nama_jurusan ?? '';
-            $tahunAjaran = $rombel->kelas->tahun_ajaran ?? '';
+                $tingkat = $rombel->kelas->tingkat ?? '';
+                $namaJurusan = $rombel->jurusan->nama_jurusan ?? '';
+                $tahunAjaran = $rombel->kelas->tahun_ajaran ?? '';
 
-            return [
-                'id' => $m->id,
-                'nama_mapel' => $m->nama_mapel,
-                'tahun_ajaran' => $tahunAjaran,
-                'nama_kelas' => trim($tingkat . ' ' . $namaJurusan),
-                'jumlah_siswa' => $jumlahSiswa,
-            ];
-        });
+                return [
+                    'id' => $m->id,
+                    'rombel_id' => $rombel->id,
+                    'nama_mapel' => $m->nama_mapel,
+                    'tahun_ajaran' => $tahunAjaran,
+                    'nama_kelas' => trim($tingkat . ' ' . $namaJurusan),
+                    'jumlah_siswa' => $jumlahSiswa,
+                ];
+            });
+        })->values();
 
         return response()->json([
             'data' => $data

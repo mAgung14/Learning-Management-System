@@ -103,28 +103,29 @@ class DashboardController extends Controller
             ->where('guru_id', $guru->id)
             ->pluck('mata_pelajaran_id');
 
-        $totalMapel = $mapelIds->count();
-
         // Ambil preview mata pelajaran
         $mapelPreview = MataPelajaran::with(['rombel.kelas', 'rombel.jurusan'])
             ->whereIn('id', $mapelIds)
             ->get()
-            ->map(function ($m) {
-                $rombel = $m->rombel->first();
-                $tingkat = $rombel->kelas->tingkat ?? '';
-                $namaJurusan = $rombel->jurusan->nama_jurusan ?? '';
+            ->flatMap(function ($m) {
+                return $m->rombel->map(function ($rombel) use ($m) {
+                    $tingkat = $rombel->kelas->tingkat ?? '';
+                    $namaJurusan = $rombel->jurusan->nama_jurusan ?? '';
 
-                return [
-                    'id' => $m->id,
-                    'nama_mapel' => $m->nama_mapel,
-                    'kode_mapel' => $m->kode_mapel,
-                    'tingkat' => $tingkat,
-                    'jurusan' => $namaJurusan,
-                    // Menggabungkan tingkat dan jurusan untuk judul card jika diperlukan frontend
-                    'judul_card' => trim($tingkat . ' ' . $namaJurusan),
-                    'deskripsi' => $m->deskripsi ?? $m->nama_mapel,
-                ];
-            });
+                    return [
+                        'id' => $m->id,
+                        'rombel_id' => $rombel->id,
+                        'nama_mapel' => $m->nama_mapel,
+                        'kode_mapel' => $m->kode_mapel,
+                        'tingkat' => $tingkat,
+                        'jurusan' => $namaJurusan,
+                        'judul_card' => trim($tingkat . ' ' . $namaJurusan),
+                        'deskripsi' => $m->deskripsi ?? $m->nama_mapel,
+                    ];
+                });
+            })->values();
+
+        $totalMapel = $mapelPreview->count();
 
         return response()->json([
             'data' => [

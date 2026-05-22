@@ -13,9 +13,54 @@ class StorePengumpulanRequest extends FormRequest
 
     public function rules(): array
     {
-        return [
+        $rules = [
             'tugas_id' => 'required|exists:tugas,id',
-            'file' => 'required|file|max:10240',
+            'file' => 'required_without:link|nullable|file|max:10240',
+            'link' => 'required_without:file|nullable|string|url|max:1000',
         ];
+
+        // If the student already has a submission, relax the rules so both fields are optional
+        $user = auth('api')->user();
+        if ($user && $user->role === 'siswa') {
+            $siswa = \App\Models\Siswa::where('user_id', $user->id)->first();
+            if ($siswa) {
+                $tugasId = $this->input('tugas_id') ?? $this->input('tugasId');
+                if ($tugasId) {
+                    $pengumpulan = \App\Models\Pengumpulan::where('tugas_id', $tugasId)
+                        ->where('siswa_id', $siswa->id)
+                        ->first();
+                    if ($pengumpulan) {
+                        $rules['file'] = 'nullable|file|max:10240';
+                        $rules['link'] = 'nullable|string|url|max:1000';
+                    }
+                }
+            }
+        }
+
+        return $rules;
+    }
+
+    protected function prepareForValidation()
+    {
+        if ($this->has('link')) {
+            $link = $this->input('link');
+            if (is_string($link)) {
+                $link = trim($link);
+                if ($link === 'null' || $link === 'undefined' || $link === '') {
+                    $this->merge(['link' => null]);
+                } elseif (!preg_match('~^(?:f|ht)tps?://~i', $link)) {
+                    $this->merge(['link' => 'https://' . $link]);
+                }
+            }
+        }
+
+        if ($this->has('file')) {
+            $file = $this->input('file');
+            // If the file parameter is sent as a string (which could be "null", "undefined",
+            // empty, or the URL of the existing file), we remove it so validation passes.
+            if (is_string($file)) {
+                $this->request->remove('file');
+            }
+        }
     }
 }

@@ -99,6 +99,7 @@ Route::middleware(['auth:api', 'role:admin'])->group(function () {
     Route::get('/mata-pelajaran/form-data', [MataPelajaranController::class, 'formData']);
     Route::apiResource('mata-pelajaran', MataPelajaranController::class);
     Route::apiResource('siswa', SiswaController::class);
+    Route::post('/siswa/{id}/reset-password', [SiswaController::class, 'resetPassword']);
     Route::apiResource('guru', GuruController::class);
     Route::apiResource('users', UserController::class)->only(['index', 'store']);
     Route::apiResource('jurusan', JurusanController::class);
@@ -109,6 +110,8 @@ Route::middleware(['auth:api', 'role:admin'])->group(function () {
     Route::delete('/rombel/{id}/kick/{siswa_id}', [RombelController::class, 'kick']);
     Route::post('/rombel/{id}/assign-mapel', [RombelController::class, 'assignMapel']);
     Route::get('/rombel/{id}/mapel', [RombelController::class, 'getMapel']);
+    Route::post('/rombel/promote', [RombelController::class, 'promote']);
+    Route::post('/rombel/graduate', [RombelController::class, 'graduate']);
     Route::get('/mapel/filter', [MataPelajaranController::class, 'filterMapel']);
 
     // Anggota Kelas — ringkasan & assign manual

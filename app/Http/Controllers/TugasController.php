@@ -25,7 +25,11 @@ class TugasController extends Controller
                     ->pluck('mata_pelajaran_id')
                     ->toArray();
                 
-                $query->whereIn('mapel_id', $mapelIds);
+                $query->whereIn('mapel_id', $mapelIds)
+                    ->where(function ($q) use ($rombelIds) {
+                        $q->whereNull('rombel_id')
+                          ->orWhereIn('rombel_id', $rombelIds);
+                    });
             }
         }
 
@@ -335,6 +339,7 @@ class TugasController extends Controller
                 'waktu' => $waktu,
                 'status_waktu' => $statusWaktu,
                 'lampiran' => $pengumpulan ? $pengumpulan->file : null,
+                'link' => $pengumpulan ? $pengumpulan->link : null,
                 'nama_file' => $pengumpulan && $pengumpulan->file ? basename($pengumpulan->file) : 'Belum ada file',
                 'status' => $isSubmitted ? 'HADIR' : 'ALFA',
                 'nilai' => ($pengumpulan && $pengumpulan->nilai !== null) ? $pengumpulan->nilai : '--',

@@ -60,31 +60,42 @@ class PengumpulanController extends Controller
         // Cek apakah sudah pernah mengumpulkan
         $pengumpulan = Pengumpulan::where('tugas_id', $tugasId)->where('siswa_id', $siswa->id)->first();
 
-        // Upload file
-        $file = $request->file('file');
-        $path = $file->store('pengumpulan_files', 'public');
-        $fileUrl = asset('storage/' . $path);
+        // Upload file jika ada
+        $fileUrl = null;
+        if ($request->hasFile('file')) {
+            $file = $request->file('file');
+            $path = $file->store('pengumpulan_files', 'public');
+            $fileUrl = asset('storage/' . $path);
+        }
+
+        $link = $request->input('link');
 
         if ($pengumpulan) {
-            // Hapus file lama jika ada
-            if ($pengumpulan->file) {
-                $oldPath = str_replace(asset('storage') . '/', '', $pengumpulan->file);
-                if (\Illuminate\Support\Facades\Storage::disk('public')->exists($oldPath)) {
-                    \Illuminate\Support\Facades\Storage::disk('public')->delete($oldPath);
+            // Jika ada file baru diunggah, hapus file lama dan simpan file baru
+            if ($request->hasFile('file')) {
+                if ($pengumpulan->file) {
+                    $oldPath = str_replace(asset('storage') . '/', '', $pengumpulan->file);
+                    if (\Illuminate\Support\Facades\Storage::disk('public')->exists($oldPath)) {
+                        \Illuminate\Support\Facades\Storage::disk('public')->delete($oldPath);
+                    }
                 }
+                $pengumpulan->file = $fileUrl;
             }
 
-            // Update pengumpulan
-            $pengumpulan->update([
-                'file' => $fileUrl,
-                'submitted_at' => now(),
-            ]);
+            // Jika input link dikirimkan (bisa string URL atau null jika dihapus), update link
+            if ($request->has('link')) {
+                $pengumpulan->link = $link;
+            }
+
+            $pengumpulan->submitted_at = now();
+            $pengumpulan->save();
         } else {
             // Buat pengumpulan baru
             $pengumpulan = Pengumpulan::create([
                 'tugas_id' => $tugasId,
                 'siswa_id' => $siswa->id,
                 'file' => $fileUrl,
+                'link' => $link,
                 'submitted_at' => now(),
             ]);
         }

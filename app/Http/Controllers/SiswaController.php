@@ -242,8 +242,10 @@ $siswa = Siswa::where('user_id', $user->id)->with('user:id,username,role')->firs
                     'rombel.jurusan'
                 ])->get();
 
-        $data = $mapels->map(function ($m) {
-            $rombel = $m->rombel->first();
+        $data = $mapels->map(function ($m) use ($rombelIds) {
+            $rombel = $m->rombel->first(function ($r) use ($rombelIds) {
+                return in_array($r->id, $rombelIds->toArray());
+            }) ?: $m->rombel->first();
             return [
                 'id' => $m->id,
                 'nama_mapel' => $m->nama_mapel,
@@ -304,7 +306,9 @@ $siswa = Siswa::where('user_id', $user->id)->with('user:id,username,role')->firs
             ->orderBy('created_at', 'desc')
             ->get();
 
-        $rombel = $mapel->rombel->first();
+        $rombel = $mapel->rombel->first(function ($r) use ($rombelIds) {
+            return in_array($r->id, $rombelIds);
+        }) ?: $mapel->rombel->first();
 
         // Hitung jumlah tugas yang belum dikerjakan untuk mapel ini
         $tugasIds = \App\Models\Tugas::where('mapel_id', $id)
@@ -453,7 +457,9 @@ $siswa = Siswa::where('user_id', $user->id)->with('user:id,username,role')->firs
             ->where('siswa_id', $siswa->id)
             ->first();
 
-        $rombelTugas = $tugas->mapel->rombel->first();
+        $rombelTugas = $tugas->mapel->rombel->first(function ($r) use ($rombelIds) {
+            return in_array($r->id, $rombelIds);
+        }) ?: $tugas->mapel->rombel->first();
 
         $data = [
             'id' => $tugas->id,
@@ -466,6 +472,7 @@ $siswa = Siswa::where('user_id', $user->id)->with('user:id,username,role')->firs
             'pengumpulan' => $pengumpulan ? [
                 'id' => $pengumpulan->id,
                 'file' => $pengumpulan->file,
+                'link' => $pengumpulan->link,
                 'submitted_at' => $pengumpulan->submitted_at,
                 'status' => $pengumpulan->submitted_at ? 'Sudah dikumpulkan' : 'Belum dikumpulkan',
                 'nilai' => $pengumpulan->nilai ?? 'Belum dinilai'
@@ -492,6 +499,28 @@ $siswa = Siswa::where('user_id', $user->id)->with('user:id,username,role')->firs
 
         return response()->json([
             'message' => 'Data siswa berhasil dihapus'
+        ]);
+    }
+
+    public function resetPassword($id)
+    {
+        $siswa = Siswa::findOrFail($id);
+
+        $user = $siswa->user;
+        if (!$user) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Akun user untuk siswa ini tidak ditemukan.'
+            ], 404);
+        }
+
+        $user->update([
+            'password' => \Hash::make('12345678')
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Password siswa berhasil direset ke "12345678".'
         ]);
     }
 }
