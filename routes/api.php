@@ -64,6 +64,7 @@ Route::middleware(['auth:api', 'role:guru'])->group(function () {
     Route::get('tugas/form-data', [TugasController::class, 'formData']);
     Route::get('tugas/{id}/pengumpulan', [TugasController::class, 'pengumpulanByTugas']);
     Route::post('pengumpulan/{pengumpulanId}/nilai', [TugasController::class, 'berikanNilai']);
+    Route::apiResource('tugas-susulan', \App\Http\Controllers\TugasSusulanController::class)->only(['index', 'store', 'destroy']);
     Route::apiResource('tugas', TugasController::class);
     Route::get('anggota-kelas', [AnggotaKelasController::class, 'index']);
 
@@ -83,6 +84,8 @@ Route::middleware(['auth:api', 'role:siswa'])->group(function () {
     Route::get('/siswa/mata-pelajaran', [SiswaController::class, 'mataPelajaran']);
     Route::get('/siswa/mata-pelajaran/{id}', [SiswaController::class, 'detailMataPelajaran']);
     Route::get('/siswa/mata-pelajaran/{id}/tugas', [SiswaController::class, 'tugasMataPelajaran']);
+    Route::get('/siswa/tugas-susulan', [\App\Http\Controllers\TugasSusulanController::class, 'siswaIndex']);
+    Route::get('/siswa/tugas-susulan/{id}', [\App\Http\Controllers\TugasSusulanController::class, 'siswaShow']);
     Route::get('/siswa/tugas/{tugasId}', [SiswaController::class, 'detailTugas']);
     Route::post('/pengumpulan', [PengumpulanController::class, 'store']);
     Route::delete('/siswa/pengumpulan/{id}', [PengumpulanController::class, 'batal']);

@@ -33,4 +33,9 @@ class Tugas extends Model
     {
         return $this->hasMany(BankSoal::class);
     }
+
+    public function tugasSusulan()
+    {
+        return $this->hasMany(TugasSusulan::class, 'tugas_id');
+    }
 }

@@ -51,10 +51,22 @@ class PengumpulanController extends Controller
         }
 
         // Cek Deadline
-        if (\Carbon\Carbon::parse($tugas->deadline)->isPast()) {
-            return response()->json([
-                'message' => 'Batas waktu pengumpulan tugas sudah berakhir pada ' . \Carbon\Carbon::parse($tugas->deadline)->format('d M Y, H:i')
-            ], 400);
+        $tugasSusulan = \App\Models\TugasSusulan::where('tugas_id', $tugasId)
+            ->where('siswa_id', $siswa->id)
+            ->first();
+
+        if ($tugasSusulan) {
+            if (\Carbon\Carbon::parse($tugasSusulan->deadline)->isPast()) {
+                return response()->json([
+                    'message' => 'Batas waktu pengumpulan tugas susulan sudah berakhir pada ' . \Carbon\Carbon::parse($tugasSusulan->deadline)->format('d M Y, H:i')
+                ], 400);
+            }
+        } else {
+            if (\Carbon\Carbon::parse($tugas->deadline)->isPast()) {
+                return response()->json([
+                    'message' => 'Batas waktu pengumpulan tugas sudah berakhir pada ' . \Carbon\Carbon::parse($tugas->deadline)->format('d M Y, H:i')
+                ], 400);
+            }
         }
 
         // Cek apakah sudah pernah mengumpulkan
