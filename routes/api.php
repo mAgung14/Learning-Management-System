@@ -68,15 +68,6 @@ Route::middleware(['auth:api', 'role:guru'])->group(function () {
     Route::apiResource('tugas', TugasController::class);
     Route::get('anggota-kelas', [AnggotaKelasController::class, 'index']);
 
-    // Bank Soal — AI Generator (Structured)
-    Route::post('bank-soal/generate', [\App\Http\Controllers\BankSoalController::class, 'generate']);
-    Route::get('bank-soal/status/{logId}', [\App\Http\Controllers\BankSoalController::class, 'status']);
-    Route::post('bank-soal/publish', [\App\Http\Controllers\BankSoalController::class, 'publish']);
-    Route::get('bank-soal/logs', [\App\Http\Controllers\BankSoalController::class, 'logs']);
-    Route::apiResource('bank-soal', \App\Http\Controllers\BankSoalController::class)->only(['index', 'show', 'update', 'destroy']);
-
-    // AI Helper (Unstructured / Text Generation)
-    Route::post('ai/generate-deskripsi', [\App\Http\Controllers\AiController::class, 'generateDeskripsi']);
 });
 
 Route::middleware(['auth:api', 'role:siswa'])->group(function () {
