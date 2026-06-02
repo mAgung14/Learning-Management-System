@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('file_material', function (Blueprint $table) {
         $table->id();
         $table->foreignId('materi_id')->constrained('materi')->cascadeOnDelete();
-        $table->enum('tipe', ['FILE', 'VIDEO']);
+        $table->enum('tipe', ['FILE', 'VIDEO', 'IMAGE', 'PDF', 'YOUTUBE']);
         $table->string('url');
         $table->string('nama_file');
         $table->timestamps();

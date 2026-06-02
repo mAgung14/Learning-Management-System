@@ -95,6 +95,7 @@ Route::middleware(['auth:api', 'role:admin'])->group(function () {
     Route::apiResource('siswa', SiswaController::class);
     Route::post('/siswa/{id}/reset-password', [SiswaController::class, 'resetPassword']);
     Route::apiResource('guru', GuruController::class);
+    Route::post('/guru/{id}/reset-password', [GuruController::class, 'resetPassword']);
     Route::apiResource('users', UserController::class)->only(['index', 'store']);
     Route::apiResource('jurusan', JurusanController::class);
     // Rombel — CRUD + assign siswa + kick siswa + assign mapel

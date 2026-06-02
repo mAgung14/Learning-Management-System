@@ -16,7 +16,7 @@ class UserImportTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_admin_can_import_siswa_via_csv()
+    public function test_admin_bisa_mengimpor_siswa_lewat_csv()
     {
         // 1. Setup Admin
         $admin = User::create([
@@ -55,7 +55,7 @@ class UserImportTest extends TestCase
         $this->assertDatabaseHas('siswa', ['nis' => '12346', 'nama' => 'Siswa Dua', 'jenis_kelamin' => 'Perempuan']);
     }
 
-    public function test_import_siswa_fails_on_validation_errors()
+    public function test_impor_siswa_gagal_jika_ada_kesalahan_validasi()
     {
         $admin = User::create([
             'username' => 'admin_test',
@@ -80,7 +80,7 @@ class UserImportTest extends TestCase
         $response->assertJsonStructure(['errors']);
     }
 
-    public function test_admin_can_import_guru_via_csv()
+    public function test_admin_bisa_mengimpor_guru_lewat_csv()
     {
         $admin = User::create([
             'username' => 'admin_test',
@@ -106,7 +106,7 @@ class UserImportTest extends TestCase
         $this->assertDatabaseHas('guru', ['nik' => '98765', 'nama' => 'Guru Satu', 'jenis_kelamin' => 'Laki-laki']);
     }
 
-    public function test_admin_can_delete_siswa_and_associated_user()
+    public function test_admin_bisa_menghapus_siswa_dan_akun_user_terkait()
     {
         $admin = User::create([
             'username' => 'admin_test',
@@ -136,7 +136,7 @@ class UserImportTest extends TestCase
         $this->assertDatabaseMissing('users', ['id' => $user->id]);
     }
 
-    public function test_admin_can_delete_guru_and_associated_user()
+    public function test_admin_bisa_menghapus_guru_dan_akun_user_terkait()
     {
         $admin = User::create([
             'username' => 'admin_test',

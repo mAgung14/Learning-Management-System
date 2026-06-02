@@ -99,7 +99,7 @@ class TugasSusulanTest extends TestCase
         ]);
     }
 
-    public function test_siswa_cannot_submit_after_deadline_without_tugas_susulan()
+    public function test_siswa_tidak_bisa_mengumpulkan_setelah_deadline_tanpa_tugas_susulan()
     {
         $response = $this->actingAs($this->siswaUser, 'api')
             ->postJson('/api/pengumpulan', [
@@ -113,7 +113,7 @@ class TugasSusulanTest extends TestCase
         ]);
     }
 
-    public function test_guru_can_create_tugas_susulan_for_siswa()
+    public function test_guru_bisa_membuat_tugas_susulan_untuk_siswa()
     {
         $futureDeadline = Carbon::now()->addDay()->toDateTimeString();
 
@@ -137,7 +137,7 @@ class TugasSusulanTest extends TestCase
         ]);
     }
 
-    public function test_siswa_can_submit_after_deadline_with_tugas_susulan()
+    public function test_siswa_bisa_mengumpulkan_setelah_deadline_dengan_tugas_susulan()
     {
         // 1. Berikan tugas susulan
         $futureDeadline = Carbon::now()->addDay();
@@ -165,7 +165,7 @@ class TugasSusulanTest extends TestCase
         ]);
     }
 
-    public function test_siswa_sees_original_deadline_in_standard_task_endpoint()
+    public function test_siswa_melihat_deadline_asli_pada_endpoint_tugas_standar()
     {
         // 1. Berikan tugas susulan
         $futureDeadline = Carbon::now()->addDay()->toDateTimeString();
@@ -185,7 +185,7 @@ class TugasSusulanTest extends TestCase
         $response->assertJsonMissingPath('data.tugas_susulan');
     }
 
-    public function test_guru_can_view_tugas_susulan_submissions()
+    public function test_guru_bisa_melihat_pengumpulan_tugas_susulan()
     {
         // 1. Berikan tugas susulan
         $futureDeadline = Carbon::now()->addDay();
@@ -205,7 +205,7 @@ class TugasSusulanTest extends TestCase
         $response->assertJsonPath('data.0.keterangan', 'Susulan');
     }
 
-    public function test_siswa_can_view_their_own_tugas_susulan_list_and_details()
+    public function test_siswa_bisa_melihat_daftar_dan_detail_tugas_susulan_mereka_sendiri()
     {
         $futureDeadline = Carbon::now()->addDay()->toDateTimeString();
         $susulan = TugasSusulan::create([
@@ -233,7 +233,7 @@ class TugasSusulanTest extends TestCase
         $responseDetail->assertJsonPath('data.keterangan', 'Susulan khusus list');
     }
 
-    public function test_guru_can_create_tugas_susulan_with_custom_title_and_description()
+    public function test_guru_bisa_membuat_tugas_susulan_dengan_judul_dan_deskripsi_kustom()
     {
         $futureDeadline = Carbon::now()->addDay()->toDateTimeString();
 

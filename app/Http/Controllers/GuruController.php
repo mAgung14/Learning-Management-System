@@ -183,4 +183,26 @@ class GuruController extends Controller
             'data' => $data
         ]);
     }
+
+    public function resetPassword($id)
+    {
+        $guru = Guru::findOrFail($id);
+
+        $user = $guru->user;
+        if (!$user) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Akun user untuk guru ini tidak ditemukan.'
+            ], 404);
+        }
+
+        $user->update([
+            'password' => \Hash::make('12345678')
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Password guru berhasil direset ke "12345678".'
+        ]);
+    }
 }
