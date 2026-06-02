@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Log;
 use App\Models\Diskusi;
 use App\Models\MataPelajaran;
 use App\Events\MessageSent;
+use App\Events\MessageDeleted;
 
 class DiskusiController extends Controller
 {
@@ -96,5 +97,42 @@ class DiskusiController extends Controller
             'created_at' => $diskusi->created_at,
             'updated_at' => $diskusi->updated_at,
         ];
+    }
+
+    /**
+     * Delete a chat message.
+     * 
+     * @tags Diskusi Mapel
+     */
+    public function destroy($id)
+    {
+        $diskusi = Diskusi::findOrFail($id);
+        $user = auth()->user();
+
+        // Diizinkan menghapus jika:
+        // 1. User adalah pembuat pesan tersebut
+        // 2. User adalah guru
+        if ($diskusi->user_id !== $user->id && $user->role !== 'guru') {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Anda tidak memiliki akses untuk menghapus pesan ini'
+            ], 403);
+        }
+
+        $mapelId = $diskusi->mata_pelajaran_id;
+
+        $diskusi->delete();
+
+        // Broadcast event
+        try {
+            broadcast(new MessageDeleted($id, $mapelId))->toOthers();
+        } catch (\Exception $e) {
+            Log::warning('Broadcast hapus diskusi gagal: ' . $e->getMessage());
+        }
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Pesan berhasil dihapus'
+        ]);
     }
 }

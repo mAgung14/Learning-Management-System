@@ -181,4 +181,56 @@ class PengumumanDanDiskusiTest extends TestCase
         $responseIndex->assertStatus(200);
         $responseIndex->assertJsonCount(2, 'data');
     }
+
+    public function test_user_bisa_menghapus_pesan_di_forum_diskusi()
+    {
+        Event::fake();
+
+        // 1. Buat pesan diskusi siswa & guru
+        $diskusiSiswa = Diskusi::create([
+            'mata_pelajaran_id' => $this->mapel->id,
+            'user_id' => $this->siswaUser->id,
+            'pesan' => 'Pesan siswa untuk dihapus',
+        ]);
+
+        $diskusiGuru = Diskusi::create([
+            'mata_pelajaran_id' => $this->mapel->id,
+            'user_id' => $this->guruUser->id,
+            'pesan' => 'Pesan guru untuk dihapus',
+        ]);
+
+        // 2. Siswa mencoba menghapus pesan milik orang lain (Guru) -> Dilarang (403)
+        $responseDeleteForbidden = $this->actingAs($this->siswaUser, 'api')
+            ->deleteJson("/api/diskusi/{$diskusiGuru->id}");
+        $responseDeleteForbidden->assertStatus(403);
+        $this->assertDatabaseHas('diskusis', ['id' => $diskusiGuru->id]);
+
+        // 3. Siswa menghapus pesannya sendiri -> Sukses (200)
+        $responseDeleteSiswa = $this->actingAs($this->siswaUser, 'api')
+            ->deleteJson("/api/diskusi/{$diskusiSiswa->id}");
+        $responseDeleteSiswa->assertStatus(200);
+        $responseDeleteSiswa->assertJsonPath('status', 'success');
+        $this->assertDatabaseMissing('diskusis', ['id' => $diskusiSiswa->id]);
+
+        // Memastikan event broadcast MessageDeleted telah dipanggil
+        Event::assertDispatched(\App\Events\MessageDeleted::class);
+
+        // 4. Guru menghapus pesannya sendiri -> Sukses (200)
+        $responseDeleteGuru = $this->actingAs($this->guruUser, 'api')
+            ->deleteJson("/api/diskusi/{$diskusiGuru->id}");
+        $responseDeleteGuru->assertStatus(200);
+        $this->assertDatabaseMissing('diskusis', ['id' => $diskusiGuru->id]);
+
+        // 5. Guru menghapus pesan siswa lain (Moderasi) -> Sukses (200)
+        $diskusiSiswa2 = Diskusi::create([
+            'mata_pelajaran_id' => $this->mapel->id,
+            'user_id' => $this->siswaUser->id,
+            'pesan' => 'Pesan siswa 2 untuk dimoderasi',
+        ]);
+
+        $responseDeleteModeration = $this->actingAs($this->guruUser, 'api')
+            ->deleteJson("/api/diskusi/{$diskusiSiswa2->id}");
+        $responseDeleteModeration->assertStatus(200);
+        $this->assertDatabaseMissing('diskusis', ['id' => $diskusiSiswa2->id]);
+    }
 }

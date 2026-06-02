@@ -76,7 +76,8 @@ class PengumpulanController extends Controller
         $fileUrl = null;
         if ($request->hasFile('file')) {
             $file = $request->file('file');
-            $path = $file->store('pengumpulan_files', 'public');
+            $filename = time() . '_' . $file->getClientOriginalName();
+            $path = $file->storeAs('pengumpulan_files', $filename, 'public');
             $fileUrl = asset('storage/' . $path);
         }
 

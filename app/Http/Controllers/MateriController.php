@@ -60,7 +60,8 @@ class MateriController extends Controller
 
         if (count($allFiles) > 0) {
             foreach ($allFiles as $file) {
-                $path = $file->store('materi_files', 'public');
+                $filename = time() . '_' . $file->getClientOriginalName();
+                $path = $file->storeAs('materi_files', $filename, 'public');
                 
                 $mimeType = $file->getClientMimeType();
                 $tipe = 'FILE';
@@ -182,7 +183,8 @@ class MateriController extends Controller
 
         if (count($allFiles) > 0) {
             foreach ($allFiles as $file) {
-                $path = $file->store('materi_files', 'public');
+                $filename = time() . '_' . $file->getClientOriginalName();
+                $path = $file->storeAs('materi_files', $filename, 'public');
                 
                 $mimeType = $file->getClientMimeType();
                 $tipe = 'FILE';

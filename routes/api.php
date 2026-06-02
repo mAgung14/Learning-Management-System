@@ -131,6 +131,7 @@ Route::middleware(['auth:api'])->group(function () {
     // Diskusi
     Route::get('/diskusi/{mapel_id}', [\App\Http\Controllers\DiskusiController::class, 'index']);
     Route::post('/diskusi/{mapel_id}', [\App\Http\Controllers\DiskusiController::class, 'store']);
+    Route::delete('/diskusi/{id}', [\App\Http\Controllers\DiskusiController::class, 'destroy']);
 
     // Pengumuman (Bisa diakses siswa dan guru)
     Route::get('/pengumuman', [PengumumanController::class, 'index']);
