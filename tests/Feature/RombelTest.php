@@ -198,34 +198,7 @@ class RombelTest extends TestCase
         ]);
     }
 
-    public function test_admin_bisa_meluluskan_siswa_dengan_detach()
-    {
-        // Setup siswa di rombel
-        AnggotaKelas::create([
-            'siswa_id' => $this->siswa->id,
-            'rombel_id' => $this->rombelSource->id,
-        ]);
-
-        // Meluluskan dengan mengeluarkan siswa dari rombel aktif (menjadi alumni)
-        $response = $this->actingAs($this->admin, 'api')
-            ->postJson('/api/rombel/graduate', [
-                'rombel_id' => $this->rombelSource->id,
-                'action' => 'detach',
-            ]);
-
-        $response->assertStatus(200);
-        $response->assertJsonPath('success', true);
-
-        // Record AnggotaKelas dihapus, namun data Siswa dan User tetap ada
-        $this->assertDatabaseMissing('anggota_kelas', [
-            'siswa_id' => $this->siswa->id,
-        ]);
-        $this->assertDatabaseHas('siswa', [
-            'id' => $this->siswa->id,
-        ]);
-    }
-
-    public function test_admin_bisa_meluluskan_siswa_dengan_menghapus_akun()
+    public function test_admin_bisa_meluluskan_siswa_dengan_menghapus_akun_dan_siswa()
     {
         // Setup siswa di rombel
         AnggotaKelas::create([
@@ -237,7 +210,6 @@ class RombelTest extends TestCase
         $response = $this->actingAs($this->admin, 'api')
             ->postJson('/api/rombel/graduate', [
                 'rombel_id' => $this->rombelSource->id,
-                'action' => 'delete',
             ]);
 
         $response->assertStatus(200);

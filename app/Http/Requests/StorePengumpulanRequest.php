@@ -15,7 +15,7 @@ class StorePengumpulanRequest extends FormRequest
     {
         $rules = [
             'tugas_id' => 'required|exists:tugas,id',
-            'file' => 'required_without:link|nullable|file|max:10240',
+            'file' => 'required_without:link|nullable|file|mimes:pdf,doc,docx,xls,xlsx,ppt,pptx,txt,zip,rar,png,jpg,jpeg,gif,mp4,mkv,webm|max:10240',
             'link' => 'required_without:file|nullable|string|url|max:1000',
         ];
 
@@ -30,7 +30,7 @@ class StorePengumpulanRequest extends FormRequest
                         ->where('siswa_id', $siswa->id)
                         ->first();
                     if ($pengumpulan) {
-                        $rules['file'] = 'nullable|file|max:10240';
+                        $rules['file'] = 'nullable|file|mimes:pdf,doc,docx,xls,xlsx,ppt,pptx,txt,zip,rar,png,jpg,jpeg,gif,mp4,mkv,webm|max:10240';
                         $rules['link'] = 'nullable|string|url|max:1000';
                     }
                 }

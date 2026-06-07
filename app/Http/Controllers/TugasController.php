@@ -167,6 +167,17 @@ class TugasController extends Controller
     public function update(Request $request, $id)
     {
         $tugas = Tugas::findOrFail($id);
+        $user = auth()->user();
+
+        // Otorisasi: Pastikan guru yang mengupdate adalah pembuat tugas ini
+        if ($user && $user->role === 'guru') {
+            if ($tugas->guru_id !== $user->guru->id) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Akses ditolak. Anda bukan pembuat tugas ini.'
+                ], 403);
+            }
+        }
 
         $payload = $request->validate([
             'judul' => 'sometimes|string|max:255',
@@ -220,7 +231,20 @@ class TugasController extends Controller
 
     public function destroy($id)
     {
-        Tugas::destroy($id);
+        $tugas = Tugas::findOrFail($id);
+        $user = auth()->user();
+
+        // Otorisasi: Pastikan guru yang menghapus adalah pembuat tugas ini
+        if ($user && $user->role === 'guru') {
+            if ($tugas->guru_id !== $user->guru->id) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Akses ditolak. Anda bukan pembuat tugas ini.'
+                ], 403);
+            }
+        }
+
+        $tugas->delete();
 
         return response()->json([
             'message' => 'Tugas berhasil dihapus'

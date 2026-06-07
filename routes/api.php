@@ -52,12 +52,12 @@ Route::middleware(['auth:api', 'role:admin'])
 Route::get('/jurusan', [DashboardController::class, 'getJurusan']);
 Route::get('/kelas', [DashboardController::class, 'getKelas']);
 
-// Middleware Guru (Ditaruh di atas agar tidak bertabrakan dengan Route::apiResource('guru'))
 Route::middleware(['auth:api', 'role:guru'])->group(function () {
     Route::get('/dashboard/guru', [DashboardController::class, 'guruDashboard']);
     Route::get('/guru/mata-pelajaran', [GuruController::class, 'mataPelajaran']);
     Route::get('/guru/profile', [GuruController::class, 'getProfile']);
     Route::put('/guru/password', [GuruController::class, 'updatePassword']);
+    Route::put('/guru/profile', [GuruController::class, 'updateProfile']);
     Route::get('/guru/siswa', [SiswaController::class, 'forGuru']);
     Route::apiResource('guru/materi', MateriController::class);
     Route::apiResource('pengumuman', PengumumanController::class)->except(['index', 'show']);
@@ -118,13 +118,11 @@ Route::middleware(['auth:api', 'role:admin'])->group(function () {
     Route::get('/pengumpulan', [PengumpulanController::class, 'index']);
     Route::get('/pengumpulan/{id}', [PengumpulanController::class, 'show']);
     Route::delete('/pengumpulan/{id}', [PengumpulanController::class, 'destroy']);
-});
 
-Route::prefix('guru')->group(function () {
-    Route::post('/{id}/assign-mapel', [GuruMapelController::class, 'assignMapel']);
+    // Rute administratif Guru-Mapel
+    Route::post('/guru/{id}/assign-mapel', [GuruMapelController::class, 'assignMapel']);
     Route::get('/{id}/mapel', [GuruMapelController::class, 'getMapel']);
-    Route::delete('/{id}/mapel/{mapel_id}', [GuruMapelController::class, 'removeMapel']);
-    Route::put('/guru/profile', [GuruController::class, 'updateProfile']);
+    Route::delete('/guru/{id}/mapel/{mapel_id}', [GuruMapelController::class, 'removeMapel']);
 });
 
 Route::middleware(['auth:api'])->group(function () {

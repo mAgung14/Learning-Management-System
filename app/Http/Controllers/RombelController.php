@@ -299,11 +299,9 @@ class RombelController extends Controller
     {
         $request->validate([
             'rombel_id' => 'required|exists:rombel,id',
-            'action' => 'required|in:delete,detach',
         ]);
 
         $rombelId = $request->rombel_id;
-        $action = $request->action;
 
         $siswaIds = AnggotaKelas::where('rombel_id', $rombelId)->pluck('siswa_id')->toArray();
         $totalSiswa = count($siswaIds);
@@ -315,26 +313,20 @@ class RombelController extends Controller
             ], 400);
         }
 
-        if ($action === 'delete') {
-            $siswas = Siswa::whereIn('id', $siswaIds)->get();
-            \DB::transaction(function () use ($siswas) {
-                foreach ($siswas as $siswa) {
-                    if ($siswa->user_id) {
-                        \App\Models\User::destroy($siswa->user_id);
-                    } else {
-                        $siswa->delete();
-                    }
+        $siswas = Siswa::whereIn('id', $siswaIds)->get();
+        \DB::transaction(function () use ($siswas) {
+            foreach ($siswas as $siswa) {
+                if ($siswa->user_id) {
+                    \App\Models\User::destroy($siswa->user_id);
+                } else {
+                    $siswa->delete();
                 }
-            });
-        } elseif ($action === 'detach') {
-            AnggotaKelas::where('rombel_id', $rombelId)->delete();
-        }
+            }
+        });
 
         return response()->json([
             'success' => true,
-            'message' => $action === 'delete' 
-                ? "Berhasil meluluskan & menghapus {$totalSiswa} siswa beserta akunnya."
-                : "Berhasil meluluskan (mengeluarkan) {$totalSiswa} siswa dari rombel aktif (menjadi alumni).",
+            'message' => "Berhasil meluluskan & menghapus {$totalSiswa} siswa beserta akunnya.",
             'total_processed' => $totalSiswa
         ]);
     }

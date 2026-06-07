@@ -112,7 +112,8 @@ class DiskusiController extends Controller
         // Diizinkan menghapus jika:
         // 1. User adalah pembuat pesan tersebut
         // 2. User adalah guru
-        if ($diskusi->user_id !== $user->id && $user->role !== 'guru') {
+        // 3. User adalah admin
+        if ($diskusi->user_id !== $user->id && $user->role !== 'guru' && $user->role !== 'admin') {
             return response()->json([
                 'status' => 'error',
                 'message' => 'Anda tidak memiliki akses untuk menghapus pesan ini'

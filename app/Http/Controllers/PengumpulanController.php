@@ -140,23 +140,60 @@ class PengumpulanController extends Controller
     public function update(Request $request, $id)
     {
         $pengumpulan = Pengumpulan::findOrFail($id);
+        $user = auth()->user();
 
-        $payload = $request->validate([
-            'file_url' => 'sometimes|string|max:1024',
-            'fileUrl' => 'sometimes|string|max:1024',
-            'dikumpulkan_pada' => 'sometimes|date',
-            'status' => 'sometimes|string|max:50',
-        ]);
+        if ($user->role === 'siswa') {
+            $siswa = Siswa::where('user_id', $user->id)->first();
+            if (!$siswa || $pengumpulan->siswa_id !== $siswa->id) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Akses ditolak. Anda hanya dapat memperbarui pengumpulan tugas Anda sendiri.'
+                ], 403);
+            }
+
+            // Siswa tidak boleh memanipulasi tanggal dikumpulkan atau status nilai
+            $payload = $request->validate([
+                'file_url' => 'sometimes|string|url|max:1024',
+                'fileUrl' => 'sometimes|string|url|max:1024',
+                'link' => 'sometimes|nullable|string|url|max:1000',
+            ]);
+        } elseif ($user->role === 'guru') {
+            $guru = $user->guru;
+            if (!$guru || $pengumpulan->tugas->guru_id !== $guru->id) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Akses ditolak. Anda bukan pembuat tugas dari pengumpulan ini.'
+                ], 403);
+            }
+
+            // Guru boleh memanipulasi status, nilai, dan tanggal jika perlu
+            $payload = $request->validate([
+                'file_url' => 'sometimes|string|max:1024',
+                'fileUrl' => 'sometimes|string|max:1024',
+                'dikumpulkan_pada' => 'sometimes|date',
+                'status' => 'sometimes|string|max:50',
+            ]);
+        } else {
+            // Admin default bypass
+            $payload = $request->validate([
+                'file_url' => 'sometimes|string|max:1024',
+                'fileUrl' => 'sometimes|string|max:1024',
+                'dikumpulkan_pada' => 'sometimes|date',
+                'status' => 'sometimes|string|max:50',
+            ]);
+        }
 
         $data = [];
-        if (isset($payload['file_url'])) {
-            $data['file_url'] = $payload['file_url'];
+        // Normalisasi key input file
+        $fileKey = isset($payload['file_url']) ? 'file' : (isset($payload['fileUrl']) ? 'file' : null);
+        if ($fileKey) {
+            $data['file'] = $payload['file_url'] ?? $payload['fileUrl'];
         }
-        if (isset($payload['fileUrl'])) {
-            $data['file_url'] = $payload['fileUrl'];
+        if (isset($payload['link'])) {
+            $data['link'] = $payload['link'];
         }
         if (isset($payload['dikumpulkan_pada'])) {
-            $data['dikumpulkan_pada'] = $payload['dikumpulkan_pada'];
+            $data['submitted_at'] = $payload['dikumpulkan_pada'];
         }
         if (isset($payload['status'])) {
             $data['status'] = $payload['status'];

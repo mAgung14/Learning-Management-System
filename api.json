@@ -6,7 +6,7 @@
     },
     "servers": [
         {
-            "url": "http://192.168.1.15:8000/api"
+            "url": "http://192.168.1.20/api"
         }
     ],
     "security": [
@@ -53,94 +53,6 @@
                                 }
                             }
                         }
-                    },
-                    "401": {
-                        "$ref": "#/components/responses/AuthenticationException"
-                    }
-                }
-            }
-        },
-        "/ai/generate-deskripsi": {
-            "post": {
-                "operationId": "ai.generateDeskripsi",
-                "summary": "Generate deskripsi tugas berdasarkan prompt guru secara synchronous.\nTidak menyimpan ke database, langsung return hasil AI",
-                "tags": [
-                    "Ai"
-                ],
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "type": "object",
-                                "properties": {
-                                    "prompt": {
-                                        "type": "string",
-                                        "minLength": 5
-                                    }
-                                },
-                                "required": [
-                                    "prompt"
-                                ]
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "500": {
-                        "description": "",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "object",
-                                    "properties": {
-                                        "success": {
-                                            "type": "boolean"
-                                        },
-                                        "message": {
-                                            "type": "string"
-                                        }
-                                    },
-                                    "required": [
-                                        "success",
-                                        "message"
-                                    ]
-                                }
-                            }
-                        }
-                    },
-                    "200": {
-                        "description": "",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "object",
-                                    "properties": {
-                                        "success": {
-                                            "type": "boolean"
-                                        },
-                                        "data": {
-                                            "type": "object",
-                                            "properties": {
-                                                "deskripsi": {
-                                                    "type": "string"
-                                                }
-                                            },
-                                            "required": [
-                                                "deskripsi"
-                                            ]
-                                        }
-                                    },
-                                    "required": [
-                                        "success",
-                                        "data"
-                                    ]
-                                }
-                            }
-                        }
-                    },
-                    "422": {
-                        "$ref": "#/components/responses/ValidationException"
                     },
                     "401": {
                         "$ref": "#/components/responses/AuthenticationException"
@@ -1005,774 +917,6 @@
                 }
             }
         },
-        "/bank-soal/generate": {
-            "post": {
-                "operationId": "bankSoal.generate",
-                "tags": [
-                    "BankSoal"
-                ],
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "$ref": "#/components/schemas/GenerateSoalRequest"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "202": {
-                        "description": "",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "object",
-                                    "properties": {
-                                        "success": {
-                                            "type": "boolean"
-                                        },
-                                        "message": {
-                                            "type": "string",
-                                            "const": "Proses generate soal AI telah dimulai. Soal akan tersedia dalam beberapa saat."
-                                        },
-                                        "data": {
-                                            "type": "object",
-                                            "properties": {
-                                                "log_id": {
-                                                    "type": "integer"
-                                                },
-                                                "status": {
-                                                    "type": "string",
-                                                    "const": "pending"
-                                                },
-                                                "jumlah_soal_diminta": {
-                                                    "anyOf": [
-                                                        {
-                                                            "type": "string"
-                                                        },
-                                                        {
-                                                            "type": "integer",
-                                                            "enum": [
-                                                                5
-                                                            ]
-                                                        }
-                                                    ]
-                                                },
-                                                "tingkat_kesulitan": {
-                                                    "anyOf": [
-                                                        {
-                                                            "type": "string"
-                                                        },
-                                                        {
-                                                            "type": "string",
-                                                            "enum": [
-                                                                "sedang"
-                                                            ]
-                                                        }
-                                                    ]
-                                                }
-                                            },
-                                            "required": [
-                                                "log_id",
-                                                "status",
-                                                "jumlah_soal_diminta",
-                                                "tingkat_kesulitan"
-                                            ]
-                                        }
-                                    },
-                                    "required": [
-                                        "success",
-                                        "message",
-                                        "data"
-                                    ]
-                                }
-                            }
-                        }
-                    },
-                    "403": {
-                        "description": "",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "object",
-                                    "properties": {
-                                        "success": {
-                                            "type": "boolean"
-                                        },
-                                        "message": {
-                                            "type": "string",
-                                            "const": "Akses ditolak. Anda bukan pembuat tugas ini."
-                                        }
-                                    },
-                                    "required": [
-                                        "success",
-                                        "message"
-                                    ]
-                                }
-                            }
-                        }
-                    },
-                    "404": {
-                        "description": "",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "object",
-                                    "properties": {
-                                        "success": {
-                                            "type": "boolean"
-                                        },
-                                        "message": {
-                                            "type": "string",
-                                            "const": "Data guru tidak ditemukan"
-                                        }
-                                    },
-                                    "required": [
-                                        "success",
-                                        "message"
-                                    ]
-                                }
-                            }
-                        }
-                    },
-                    "401": {
-                        "$ref": "#/components/responses/AuthenticationException"
-                    },
-                    "422": {
-                        "$ref": "#/components/responses/ValidationException"
-                    }
-                }
-            }
-        },
-        "/bank-soal/status/{logId}": {
-            "get": {
-                "operationId": "bankSoal.status",
-                "tags": [
-                    "BankSoal"
-                ],
-                "parameters": [
-                    {
-                        "name": "logId",
-                        "in": "path",
-                        "required": true,
-                        "schema": {
-                            "type": "integer"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "object",
-                                    "properties": {
-                                        "success": {
-                                            "type": "boolean"
-                                        },
-                                        "data": {
-                                            "type": "object",
-                                            "properties": {
-                                                "log_id": {
-                                                    "type": "string"
-                                                },
-                                                "status": {
-                                                    "type": "string"
-                                                },
-                                                "jumlah_soal_diminta": {
-                                                    "type": "string"
-                                                },
-                                                "jumlah_soal_generated": {
-                                                    "type": "string"
-                                                },
-                                                "error_message": {
-                                                    "type": "string"
-                                                },
-                                                "created_at": {
-                                                    "type": "string"
-                                                },
-                                                "updated_at": {
-                                                    "type": "string"
-                                                },
-                                                "soal": {
-                                                    "type": "array",
-                                                    "items": {
-                                                        "$ref": "#/components/schemas/BankSoal"
-                                                    }
-                                                }
-                                            },
-                                            "required": [
-                                                "log_id",
-                                                "status",
-                                                "jumlah_soal_diminta",
-                                                "jumlah_soal_generated",
-                                                "error_message",
-                                                "created_at",
-                                                "updated_at",
-                                                "soal"
-                                            ]
-                                        }
-                                    },
-                                    "required": [
-                                        "success",
-                                        "data"
-                                    ]
-                                }
-                            }
-                        }
-                    },
-                    "403": {
-                        "description": "",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "object",
-                                    "properties": {
-                                        "success": {
-                                            "type": "boolean"
-                                        },
-                                        "message": {
-                                            "type": "string",
-                                            "const": "Akses ditolak"
-                                        }
-                                    },
-                                    "required": [
-                                        "success",
-                                        "message"
-                                    ]
-                                }
-                            }
-                        }
-                    },
-                    "404": {
-                        "description": "",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "object",
-                                    "properties": {
-                                        "success": {
-                                            "type": "boolean"
-                                        },
-                                        "message": {
-                                            "type": "string",
-                                            "const": "Log tidak ditemukan"
-                                        }
-                                    },
-                                    "required": [
-                                        "success",
-                                        "message"
-                                    ]
-                                }
-                            }
-                        }
-                    },
-                    "401": {
-                        "$ref": "#/components/responses/AuthenticationException"
-                    }
-                }
-            }
-        },
-        "/bank-soal/publish": {
-            "post": {
-                "operationId": "bankSoal.publish",
-                "tags": [
-                    "BankSoal"
-                ],
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "type": "object",
-                                "properties": {
-                                    "tugas_id": {
-                                        "type": "integer"
-                                    }
-                                },
-                                "required": [
-                                    "tugas_id"
-                                ]
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "200": {
-                        "description": "",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "object",
-                                    "properties": {
-                                        "success": {
-                                            "type": "boolean"
-                                        },
-                                        "message": {
-                                            "type": "string"
-                                        },
-                                        "data": {
-                                            "type": "object",
-                                            "properties": {
-                                                "jumlah_published": {
-                                                    "type": "integer"
-                                                }
-                                            },
-                                            "required": [
-                                                "jumlah_published"
-                                            ]
-                                        }
-                                    },
-                                    "required": [
-                                        "success",
-                                        "message",
-                                        "data"
-                                    ]
-                                }
-                            }
-                        }
-                    },
-                    "403": {
-                        "description": "",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "object",
-                                    "properties": {
-                                        "success": {
-                                            "type": "boolean"
-                                        },
-                                        "message": {
-                                            "type": "string",
-                                            "const": "Akses ditolak"
-                                        }
-                                    },
-                                    "required": [
-                                        "success",
-                                        "message"
-                                    ]
-                                }
-                            }
-                        }
-                    },
-                    "422": {
-                        "$ref": "#/components/responses/ValidationException"
-                    },
-                    "401": {
-                        "$ref": "#/components/responses/AuthenticationException"
-                    }
-                }
-            }
-        },
-        "/bank-soal/logs": {
-            "get": {
-                "operationId": "bankSoal.logs",
-                "tags": [
-                    "BankSoal"
-                ],
-                "responses": {
-                    "200": {
-                        "description": "",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "object",
-                                    "properties": {
-                                        "success": {
-                                            "type": "boolean"
-                                        },
-                                        "data": {
-                                            "type": "array",
-                                            "items": {
-                                                "type": "object",
-                                                "properties": {
-                                                    "id": {
-                                                        "type": "integer"
-                                                    },
-                                                    "tugas_id": {
-                                                        "type": "integer"
-                                                    },
-                                                    "materi_id": {
-                                                        "type": "integer"
-                                                    },
-                                                    "status": {
-                                                        "type": "string"
-                                                    },
-                                                    "jumlah_soal_diminta": {
-                                                        "type": "integer"
-                                                    },
-                                                    "jumlah_soal_generated": {
-                                                        "type": "integer"
-                                                    },
-                                                    "error_message": {
-                                                        "type": [
-                                                            "string",
-                                                            "null"
-                                                        ]
-                                                    },
-                                                    "created_at": {
-                                                        "type": "string"
-                                                    }
-                                                },
-                                                "required": [
-                                                    "id",
-                                                    "tugas_id",
-                                                    "materi_id",
-                                                    "status",
-                                                    "jumlah_soal_diminta",
-                                                    "jumlah_soal_generated",
-                                                    "error_message",
-                                                    "created_at"
-                                                ]
-                                            }
-                                        }
-                                    },
-                                    "required": [
-                                        "success",
-                                        "data"
-                                    ]
-                                }
-                            }
-                        }
-                    },
-                    "401": {
-                        "$ref": "#/components/responses/AuthenticationException"
-                    }
-                }
-            }
-        },
-        "/bank-soal": {
-            "get": {
-                "operationId": "bank-soal.index",
-                "tags": [
-                    "BankSoal"
-                ],
-                "responses": {
-                    "200": {
-                        "description": "",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "object",
-                                    "properties": {
-                                        "success": {
-                                            "type": "boolean"
-                                        },
-                                        "data": {
-                                            "type": "array",
-                                            "items": {
-                                                "$ref": "#/components/schemas/BankSoal"
-                                            }
-                                        },
-                                        "total": {
-                                            "type": "integer",
-                                            "minimum": 0
-                                        }
-                                    },
-                                    "required": [
-                                        "success",
-                                        "data",
-                                        "total"
-                                    ]
-                                }
-                            }
-                        }
-                    },
-                    "401": {
-                        "$ref": "#/components/responses/AuthenticationException"
-                    }
-                }
-            }
-        },
-        "/bank-soal/{id}": {
-            "get": {
-                "operationId": "bank-soal.show",
-                "tags": [
-                    "BankSoal"
-                ],
-                "parameters": [
-                    {
-                        "name": "id",
-                        "in": "path",
-                        "required": true,
-                        "schema": {
-                            "type": "integer"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "object",
-                                    "properties": {
-                                        "success": {
-                                            "type": "boolean"
-                                        },
-                                        "data": {
-                                            "type": "string"
-                                        }
-                                    },
-                                    "required": [
-                                        "success",
-                                        "data"
-                                    ]
-                                }
-                            }
-                        }
-                    },
-                    "403": {
-                        "description": "",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "object",
-                                    "properties": {
-                                        "success": {
-                                            "type": "boolean"
-                                        },
-                                        "message": {
-                                            "type": "string",
-                                            "const": "Akses ditolak"
-                                        }
-                                    },
-                                    "required": [
-                                        "success",
-                                        "message"
-                                    ]
-                                }
-                            }
-                        }
-                    },
-                    "404": {
-                        "description": "",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "object",
-                                    "properties": {
-                                        "success": {
-                                            "type": "boolean"
-                                        },
-                                        "message": {
-                                            "type": "string",
-                                            "const": "Soal tidak ditemukan"
-                                        }
-                                    },
-                                    "required": [
-                                        "success",
-                                        "message"
-                                    ]
-                                }
-                            }
-                        }
-                    },
-                    "401": {
-                        "$ref": "#/components/responses/AuthenticationException"
-                    }
-                }
-            },
-            "put": {
-                "operationId": "bank-soal.update",
-                "tags": [
-                    "BankSoal"
-                ],
-                "parameters": [
-                    {
-                        "name": "id",
-                        "in": "path",
-                        "required": true,
-                        "schema": {
-                            "type": "integer"
-                        }
-                    }
-                ],
-                "requestBody": {
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "$ref": "#/components/schemas/UpdateBankSoalRequest"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "200": {
-                        "description": "",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "object",
-                                    "properties": {
-                                        "success": {
-                                            "type": "boolean"
-                                        },
-                                        "message": {
-                                            "type": "string",
-                                            "const": "Soal berhasil diupdate"
-                                        },
-                                        "data": {
-                                            "type": "string"
-                                        }
-                                    },
-                                    "required": [
-                                        "success",
-                                        "message",
-                                        "data"
-                                    ]
-                                }
-                            }
-                        }
-                    },
-                    "403": {
-                        "description": "",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "object",
-                                    "properties": {
-                                        "success": {
-                                            "type": "boolean"
-                                        },
-                                        "message": {
-                                            "type": "string",
-                                            "const": "Akses ditolak"
-                                        }
-                                    },
-                                    "required": [
-                                        "success",
-                                        "message"
-                                    ]
-                                }
-                            }
-                        }
-                    },
-                    "404": {
-                        "description": "",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "object",
-                                    "properties": {
-                                        "success": {
-                                            "type": "boolean"
-                                        },
-                                        "message": {
-                                            "type": "string",
-                                            "const": "Soal tidak ditemukan"
-                                        }
-                                    },
-                                    "required": [
-                                        "success",
-                                        "message"
-                                    ]
-                                }
-                            }
-                        }
-                    },
-                    "401": {
-                        "$ref": "#/components/responses/AuthenticationException"
-                    },
-                    "422": {
-                        "$ref": "#/components/responses/ValidationException"
-                    }
-                }
-            },
-            "delete": {
-                "operationId": "bank-soal.destroy",
-                "tags": [
-                    "BankSoal"
-                ],
-                "parameters": [
-                    {
-                        "name": "id",
-                        "in": "path",
-                        "required": true,
-                        "schema": {
-                            "type": "integer"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "object",
-                                    "properties": {
-                                        "success": {
-                                            "type": "boolean"
-                                        },
-                                        "message": {
-                                            "type": "string",
-                                            "const": "Soal berhasil dihapus"
-                                        }
-                                    },
-                                    "required": [
-                                        "success",
-                                        "message"
-                                    ]
-                                }
-                            }
-                        }
-                    },
-                    "403": {
-                        "description": "",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "object",
-                                    "properties": {
-                                        "success": {
-                                            "type": "boolean"
-                                        },
-                                        "message": {
-                                            "type": "string",
-                                            "const": "Akses ditolak"
-                                        }
-                                    },
-                                    "required": [
-                                        "success",
-                                        "message"
-                                    ]
-                                }
-                            }
-                        }
-                    },
-                    "404": {
-                        "description": "",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "object",
-                                    "properties": {
-                                        "success": {
-                                            "type": "boolean"
-                                        },
-                                        "message": {
-                                            "type": "string",
-                                            "const": "Soal tidak ditemukan"
-                                        }
-                                    },
-                                    "required": [
-                                        "success",
-                                        "message"
-                                    ]
-                                }
-                            }
-                        }
-                    },
-                    "401": {
-                        "$ref": "#/components/responses/AuthenticationException"
-                    }
-                }
-            }
-        },
         "/broadcasting/auth": {
             "get": {
                 "operationId": "broadcast.authenticate",
@@ -1874,7 +1018,8 @@
                                                             "type": "string"
                                                         },
                                                         "total_mapel": {
-                                                            "type": "string"
+                                                            "type": "integer",
+                                                            "minimum": 0
                                                         },
                                                         "total_materi": {
                                                             "type": "integer",
@@ -1937,6 +1082,9 @@
                                                             "id": {
                                                                 "type": "integer"
                                                             },
+                                                            "rombel_id": {
+                                                                "type": "integer"
+                                                            },
                                                             "nama_mapel": {
                                                                 "type": "string"
                                                             },
@@ -1970,8 +1118,7 @@
                                                                 ]
                                                             },
                                                             "judul_card": {
-                                                                "type": "string",
-                                                                "description": "Menggabungkan tingkat dan jurusan untuk judul card jika diperlukan frontend"
+                                                                "type": "string"
                                                             },
                                                             "deskripsi": {
                                                                 "type": [
@@ -1982,6 +1129,7 @@
                                                         },
                                                         "required": [
                                                             "id",
+                                                            "rombel_id",
                                                             "nama_mapel",
                                                             "kode_mapel",
                                                             "tingkat",
@@ -2071,6 +1219,19 @@
                                                 "siswa_name": {
                                                     "type": "string"
                                                 },
+                                                "notifikasi_tugas": {
+                                                    "anyOf": [
+                                                        {
+                                                            "type": "string"
+                                                        },
+                                                        {
+                                                            "type": "string",
+                                                            "enum": [
+                                                                "Semua tugas sudah dikerjakan"
+                                                            ]
+                                                        }
+                                                    ]
+                                                },
                                                 "summary": {
                                                     "type": "object",
                                                     "properties": {
@@ -2116,6 +1277,7 @@
                                             },
                                             "required": [
                                                 "siswa_name",
+                                                "notifikasi_tugas",
                                                 "summary",
                                                 "kelas_preview",
                                                 "pengumuman"
@@ -2337,6 +1499,78 @@
                 }
             }
         },
+        "/diskusi/{id}": {
+            "delete": {
+                "operationId": "diskusi.destroy",
+                "summary": "Delete a chat message",
+                "tags": [
+                    "Diskusi"
+                ],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "const": "success"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "const": "Pesan berhasil dihapus"
+                                        }
+                                    },
+                                    "required": [
+                                        "status",
+                                        "message"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "const": "error"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "const": "Anda tidak memiliki akses untuk menghapus pesan ini"
+                                        }
+                                    },
+                                    "required": [
+                                        "status",
+                                        "message"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            }
+        },
         "/guru/mata-pelajaran": {
             "get": {
                 "operationId": "guru.mataPelajaran",
@@ -2496,6 +1730,114 @@
                                 }
                             }
                         }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            },
+            "put": {
+                "operationId": "guru.updateProfile",
+                "tags": [
+                    "Guru"
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "nama": {
+                                        "type": "string",
+                                        "maxLength": 255
+                                    },
+                                    "nik": {
+                                        "type": "string",
+                                        "maxLength": 255
+                                    },
+                                    "jenis_kelamin": {
+                                        "type": "string",
+                                        "enum": [
+                                            "L",
+                                            "P"
+                                        ]
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "const": "Profile guru berhasil diupdate"
+                                        },
+                                        "data": {
+                                            "anyOf": [
+                                                {
+                                                    "$ref": "#/components/schemas/Guru"
+                                                },
+                                                {
+                                                    "type": "null"
+                                                }
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "message",
+                                        "data"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "const": "Data guru tidak ditemukan"
+                                        }
+                                    },
+                                    "required": [
+                                        "message"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "const": "Hanya guru yang dapat mengupdate profile"
+                                        }
+                                    },
+                                    "required": [
+                                        "message"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "$ref": "#/components/responses/ValidationException"
                     },
                     "401": {
                         "$ref": "#/components/responses/AuthenticationException"
@@ -2817,38 +2159,22 @@
                 }
             }
         },
-        "/guru/guru/profile": {
-            "put": {
-                "operationId": "guru.updateProfile",
+        "/guru/{id}/reset-password": {
+            "post": {
+                "operationId": "guru.resetPassword",
                 "tags": [
                     "Guru"
                 ],
-                "requestBody": {
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "type": "object",
-                                "properties": {
-                                    "nama": {
-                                        "type": "string",
-                                        "maxLength": 255
-                                    },
-                                    "nik": {
-                                        "type": "string",
-                                        "maxLength": 255
-                                    },
-                                    "jenis_kelamin": {
-                                        "type": "string",
-                                        "enum": [
-                                            "L",
-                                            "P"
-                                        ]
-                                    }
-                                }
-                            }
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
                         }
                     }
-                },
+                ],
                 "responses": {
                     "200": {
                         "description": "",
@@ -2857,24 +2183,17 @@
                                 "schema": {
                                     "type": "object",
                                     "properties": {
+                                        "success": {
+                                            "type": "boolean"
+                                        },
                                         "message": {
                                             "type": "string",
-                                            "const": "Profile guru berhasil diupdate"
-                                        },
-                                        "data": {
-                                            "anyOf": [
-                                                {
-                                                    "$ref": "#/components/schemas/Guru"
-                                                },
-                                                {
-                                                    "type": "null"
-                                                }
-                                            ]
+                                            "const": "Password guru berhasil direset ke \"12345678\"."
                                         }
                                     },
                                     "required": [
-                                        "message",
-                                        "data"
+                                        "success",
+                                        "message"
                                     ]
                                 }
                             }
@@ -2887,39 +2206,24 @@
                                 "schema": {
                                     "type": "object",
                                     "properties": {
+                                        "success": {
+                                            "type": "boolean"
+                                        },
                                         "message": {
                                             "type": "string",
-                                            "const": "Data guru tidak ditemukan"
+                                            "const": "Akun user untuk guru ini tidak ditemukan."
                                         }
                                     },
                                     "required": [
+                                        "success",
                                         "message"
                                     ]
                                 }
                             }
                         }
                     },
-                    "403": {
-                        "description": "",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "object",
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "const": "Hanya guru yang dapat mengupdate profile"
-                                        }
-                                    },
-                                    "required": [
-                                        "message"
-                                    ]
-                                }
-                            }
-                        }
-                    },
-                    "422": {
-                        "$ref": "#/components/responses/ValidationException"
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
                     }
                 }
             }
@@ -2988,11 +2292,14 @@
                     },
                     "422": {
                         "$ref": "#/components/responses/ValidationException"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
                     }
                 }
             }
         },
-        "/guru/{id}/mapel": {
+        "/{id}/mapel": {
             "get": {
                 "operationId": "guruMapel.getMapel",
                 "tags": [
@@ -3058,6 +2365,9 @@
                                 }
                             }
                         }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
                     }
                 }
             }
@@ -3109,6 +2419,9 @@
                                 }
                             }
                         }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
                     }
                 }
             }
@@ -3116,6 +2429,8 @@
         "/jurusan": {
             "get": {
                 "operationId": "jurusan.index",
+                "description": "Endpoint ini mengembalikan daftar lengkap semua jurusan yang terdaftar di dalam sistem.\nHanya dapat diakses oleh Admin.",
+                "summary": "Menampilkan semua data jurusan",
                 "tags": [
                     "Jurusan"
                 ],
@@ -3148,6 +2463,8 @@
             },
             "post": {
                 "operationId": "jurusan.store",
+                "description": "Endpoint ini digunakan oleh Admin untuk membuat data jurusan baru.\nNama jurusan harus unik dan tidak boleh kosong.",
+                "summary": "Menambahkan jurusan baru",
                 "tags": [
                     "Jurusan"
                 ],
@@ -3171,7 +2488,106 @@
                     }
                 },
                 "responses": {
-                    "201": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "integer",
+                                    "const": 201
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "$ref": "#/components/responses/ValidationException"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            }
+        },
+        "/jurusan/{id}": {
+            "get": {
+                "operationId": "jurusan.show",
+                "description": "Endpoint ini mengembalikan informasi detail dari satu jurusan berdasarkan ID yang dicari.\nHanya dapat diakses oleh Admin.",
+                "summary": "Menampilkan detail jurusan",
+                "tags": [
+                    "Jurusan"
+                ],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/Jurusan"
+                                        }
+                                    },
+                                    "required": [
+                                        "data"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            },
+            "put": {
+                "operationId": "jurusan.update",
+                "description": "Endpoint ini digunakan oleh Admin untuk memperbarui nama jurusan yang sudah ada berdasarkan ID.\nNama jurusan baru harus unik.",
+                "summary": "Memperbarui data jurusan",
+                "tags": [
+                    "Jurusan"
+                ],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "nama_jurusan": {
+                                        "type": "string",
+                                        "maxLength": 255
+                                    }
+                                },
+                                "required": [
+                                    "nama_jurusan"
+                                ]
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
                         "description": "",
                         "content": {
                             "application/json": {
@@ -3179,8 +2595,7 @@
                                     "type": "object",
                                     "properties": {
                                         "message": {
-                                            "type": "string",
-                                            "const": "Jurusan berhasil ditambahkan"
+                                            "type": "string"
                                         },
                                         "data": {
                                             "$ref": "#/components/schemas/Jurusan"
@@ -3201,116 +2616,11 @@
                         "$ref": "#/components/responses/AuthenticationException"
                     }
                 }
-            }
-        },
-        "/jurusan/{id}": {
-            "get": {
-                "operationId": "jurusan.show",
-                "tags": [
-                    "Jurusan"
-                ],
-                "parameters": [
-                    {
-                        "name": "id",
-                        "in": "path",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "type": "string"
-                                        }
-                                    },
-                                    "required": [
-                                        "data"
-                                    ]
-                                }
-                            }
-                        }
-                    },
-                    "401": {
-                        "$ref": "#/components/responses/AuthenticationException"
-                    }
-                }
-            },
-            "put": {
-                "operationId": "jurusan.update",
-                "tags": [
-                    "Jurusan"
-                ],
-                "parameters": [
-                    {
-                        "name": "id",
-                        "in": "path",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "type": "object",
-                                "properties": {
-                                    "nama_jurusan": {
-                                        "type": "string",
-                                        "maxLength": 255
-                                    }
-                                },
-                                "required": [
-                                    "nama_jurusan"
-                                ]
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "200": {
-                        "description": "",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "object",
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "const": "Jurusan berhasil diupdate"
-                                        },
-                                        "data": {
-                                            "type": "string"
-                                        }
-                                    },
-                                    "required": [
-                                        "message",
-                                        "data"
-                                    ]
-                                }
-                            }
-                        }
-                    },
-                    "422": {
-                        "$ref": "#/components/responses/ValidationException"
-                    },
-                    "401": {
-                        "$ref": "#/components/responses/AuthenticationException"
-                    }
-                }
             },
             "delete": {
                 "operationId": "jurusan.destroy",
+                "description": "Endpoint ini digunakan oleh Admin untuk menghapus jurusan tertentu dari sistem berdasarkan ID.",
+                "summary": "Menghapus data jurusan",
                 "tags": [
                     "Jurusan"
                 ],
@@ -3333,8 +2643,7 @@
                                     "type": "object",
                                     "properties": {
                                         "message": {
-                                            "type": "string",
-                                            "const": "Jurusan berhasil dihapus"
+                                            "type": "string"
                                         }
                                     },
                                     "required": [
@@ -3603,18 +2912,6 @@
                                 "schema": {
                                     "type": "object",
                                     "properties": {
-                                        "kelas": {
-                                            "type": "array",
-                                            "items": {
-                                                "$ref": "#/components/schemas/Kelas"
-                                            }
-                                        },
-                                        "jurusan": {
-                                            "type": "array",
-                                            "items": {
-                                                "$ref": "#/components/schemas/Jurusan"
-                                            }
-                                        },
                                         "guru": {
                                             "type": "array",
                                             "items": {
@@ -3641,8 +2938,6 @@
                                         }
                                     },
                                     "required": [
-                                        "kelas",
-                                        "jurusan",
                                         "guru",
                                         "rombel"
                                     ]
@@ -3684,18 +2979,6 @@
                                                     "kode_mapel": {
                                                         "type": "string"
                                                     },
-                                                    "tingkat": {
-                                                        "type": [
-                                                            "string",
-                                                            "null"
-                                                        ]
-                                                    },
-                                                    "nama_jurusan": {
-                                                        "type": [
-                                                            "string",
-                                                            "null"
-                                                        ]
-                                                    },
                                                     "guru": {
                                                         "anyOf": [
                                                             {
@@ -3714,8 +2997,6 @@
                                                     "id",
                                                     "nama_mapel",
                                                     "kode_mapel",
-                                                    "tingkat",
-                                                    "nama_jurusan",
                                                     "guru"
                                                 ]
                                             }
@@ -3767,12 +3048,6 @@
                                             "null"
                                         ]
                                     },
-                                    "kelas_id": {
-                                        "type": "integer"
-                                    },
-                                    "jurusan_id": {
-                                        "type": "integer"
-                                    },
                                     "guru_ids": {
                                         "type": "array",
                                         "items": {
@@ -3800,8 +3075,7 @@
                                 },
                                 "required": [
                                     "nama_mapel",
-                                    "kode_mapel",
-                                    "kelas_id"
+                                    "kode_mapel"
                                 ]
                             }
                         }
@@ -3926,15 +3200,6 @@
                                             "null"
                                         ]
                                     },
-                                    "kelas_id": {
-                                        "type": "integer"
-                                    },
-                                    "kelasId": {
-                                        "type": "integer"
-                                    },
-                                    "jurusan_id": {
-                                        "type": "integer"
-                                    },
                                     "guru_ids": {
                                         "type": "array",
                                         "items": {
@@ -4043,22 +3308,6 @@
                 "tags": [
                     "MataPelajaran"
                 ],
-                "parameters": [
-                    {
-                        "name": "kelas_id",
-                        "in": "query",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "jurusan_id",
-                        "in": "query",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
                 "responses": {
                     "200": {
                         "description": "",
@@ -4067,17 +3316,6 @@
                                 "schema": {
                                     "type": "object",
                                     "properties": {
-                                        "debug": {
-                                            "type": "object",
-                                            "properties": {
-                                                "kelas_id": {},
-                                                "jurusan_id": {}
-                                            },
-                                            "required": [
-                                                "kelas_id",
-                                                "jurusan_id"
-                                            ]
-                                        },
                                         "data": {
                                             "type": "array",
                                             "items": {
@@ -4086,7 +3324,6 @@
                                         }
                                     },
                                     "required": [
-                                        "debug",
                                         "data"
                                     ]
                                 }
@@ -4333,6 +3570,29 @@
                             }
                         }
                     },
+                    "403": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "const": "Akses ditolak. Anda bukan pembuat materi ini."
+                                        }
+                                    },
+                                    "required": [
+                                        "success",
+                                        "message"
+                                    ]
+                                }
+                            }
+                        }
+                    },
                     "422": {
                         "$ref": "#/components/responses/ValidationException"
                     },
@@ -4370,6 +3630,29 @@
                                         }
                                     },
                                     "required": [
+                                        "message"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "const": "Akses ditolak. Anda bukan pembuat materi ini."
+                                        }
+                                    },
+                                    "required": [
+                                        "success",
                                         "message"
                                     ]
                                 }
@@ -4779,19 +4062,21 @@
                                 "properties": {
                                     "file_url": {
                                         "type": "string",
+                                        "format": "uri",
                                         "maxLength": 1024
                                     },
                                     "fileUrl": {
                                         "type": "string",
+                                        "format": "uri",
                                         "maxLength": 1024
                                     },
-                                    "dikumpulkan_pada": {
-                                        "type": "string",
-                                        "format": "date-time"
-                                    },
-                                    "status": {
-                                        "type": "string",
-                                        "maxLength": 50
+                                    "link": {
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ],
+                                        "format": "uri",
+                                        "maxLength": 1000
                                     }
                                 }
                             }
@@ -4822,6 +4107,49 @@
                             }
                         }
                     },
+                    "403": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "anyOf": [
+                                        {
+                                            "type": "object",
+                                            "properties": {
+                                                "success": {
+                                                    "type": "boolean"
+                                                },
+                                                "message": {
+                                                    "type": "string",
+                                                    "const": "Akses ditolak. Anda bukan pembuat tugas dari pengumpulan ini."
+                                                }
+                                            },
+                                            "required": [
+                                                "success",
+                                                "message"
+                                            ]
+                                        },
+                                        {
+                                            "type": "object",
+                                            "properties": {
+                                                "success": {
+                                                    "type": "boolean"
+                                                },
+                                                "message": {
+                                                    "type": "string",
+                                                    "const": "Akses ditolak. Anda hanya dapat memperbarui pengumpulan tugas Anda sendiri."
+                                                }
+                                            },
+                                            "required": [
+                                                "success",
+                                                "message"
+                                            ]
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    },
                     "422": {
                         "$ref": "#/components/responses/ValidationException"
                     },
@@ -4832,38 +4160,6 @@
             }
         },
         "/pengumuman": {
-            "get": {
-                "operationId": "pengumuman.index",
-                "tags": [
-                    "Pengumuman"
-                ],
-                "responses": {
-                    "200": {
-                        "description": "",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "type": "array",
-                                            "items": {
-                                                "$ref": "#/components/schemas/Pengumuman"
-                                            }
-                                        }
-                                    },
-                                    "required": [
-                                        "data"
-                                    ]
-                                }
-                            }
-                        }
-                    },
-                    "401": {
-                        "$ref": "#/components/responses/AuthenticationException"
-                    }
-                }
-            },
             "post": {
                 "operationId": "pengumuman.store",
                 "tags": [
@@ -5057,23 +4353,11 @@
                         "$ref": "#/components/responses/AuthenticationException"
                     }
                 }
-            }
-        },
-        "/pengumuman/{id}": {
+            },
             "get": {
-                "operationId": "pengumuman.show",
+                "operationId": "pengumuman.index",
                 "tags": [
                     "Pengumuman"
-                ],
-                "parameters": [
-                    {
-                        "name": "id",
-                        "in": "path",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
                 ],
                 "responses": {
                     "200": {
@@ -5084,7 +4368,10 @@
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "type": "string"
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/Pengumuman"
+                                            }
                                         }
                                     },
                                     "required": [
@@ -5094,14 +4381,13 @@
                             }
                         }
                     },
-                    "404": {
-                        "$ref": "#/components/responses/ModelNotFoundException"
-                    },
                     "401": {
                         "$ref": "#/components/responses/AuthenticationException"
                     }
                 }
-            },
+            }
+        },
+        "/pengumuman/{id}": {
             "put": {
                 "operationId": "pengumuman.update",
                 "tags": [
@@ -5398,6 +4684,48 @@
                                 }
                             }
                         }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            },
+            "get": {
+                "operationId": "pengumuman.show",
+                "tags": [
+                    "Pengumuman"
+                ],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "data"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/ModelNotFoundException"
                     },
                     "401": {
                         "$ref": "#/components/responses/AuthenticationException"
@@ -6022,6 +5350,177 @@
                 }
             }
         },
+        "/rombel/promote": {
+            "post": {
+                "operationId": "rombel.promote",
+                "tags": [
+                    "Rombel"
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "source_rombel_id": {
+                                        "type": "integer"
+                                    },
+                                    "target_rombel_id": {
+                                        "type": "integer"
+                                    }
+                                },
+                                "required": [
+                                    "source_rombel_id",
+                                    "target_rombel_id"
+                                ]
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean"
+                                        },
+                                        "message": {
+                                            "type": "string"
+                                        },
+                                        "total_promoted": {
+                                            "type": "integer",
+                                            "minimum": 0
+                                        }
+                                    },
+                                    "required": [
+                                        "success",
+                                        "message",
+                                        "total_promoted"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "const": "Tidak ada siswa di rombel asal untuk dipromosikan."
+                                        }
+                                    },
+                                    "required": [
+                                        "success",
+                                        "message"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "$ref": "#/components/responses/ValidationException"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            }
+        },
+        "/rombel/graduate": {
+            "post": {
+                "operationId": "rombel.graduate",
+                "tags": [
+                    "Rombel"
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "rombel_id": {
+                                        "type": "integer"
+                                    }
+                                },
+                                "required": [
+                                    "rombel_id"
+                                ]
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean"
+                                        },
+                                        "message": {
+                                            "type": "string"
+                                        },
+                                        "total_processed": {
+                                            "type": "integer"
+                                        }
+                                    },
+                                    "required": [
+                                        "success",
+                                        "message",
+                                        "total_processed"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "const": "Tidak ada siswa di rombel tersebut untuk diproses kelulusan."
+                                        }
+                                    },
+                                    "required": [
+                                        "success",
+                                        "message"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "$ref": "#/components/responses/ValidationException"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            }
+        },
         "/guru/siswa": {
             "get": {
                 "operationId": "siswa.forGuru",
@@ -6363,6 +5862,12 @@
                                                         }
                                                     ]
                                                 },
+                                                "tugas_tertunda": {
+                                                    "type": [
+                                                        "object",
+                                                        "null"
+                                                    ]
+                                                },
                                                 "materi": {
                                                     "type": "array",
                                                     "items": {
@@ -6429,6 +5934,7 @@
                                                 "deskripsi",
                                                 "kelas",
                                                 "guru",
+                                                "tugas_tertunda",
                                                 "materi"
                                             ]
                                         }
@@ -6537,6 +6043,9 @@
                                                 "nama_mapel": {
                                                     "type": "string"
                                                 },
+                                                "tugas_tertunda": {
+                                                    "type": "string"
+                                                },
                                                 "tugas": {
                                                     "type": "array",
                                                     "items": {
@@ -6575,6 +6084,7 @@
                                             "required": [
                                                 "mapel_id",
                                                 "nama_mapel",
+                                                "tugas_tertunda",
                                                 "tugas"
                                             ]
                                         }
@@ -6720,6 +6230,9 @@
                                                         "file": {
                                                             "type": "string"
                                                         },
+                                                        "link": {
+                                                            "type": "string"
+                                                        },
                                                         "submitted_at": {
                                                             "type": "string"
                                                         },
@@ -6747,6 +6260,7 @@
                                                     "required": [
                                                         "id",
                                                         "file",
+                                                        "link",
                                                         "submitted_at",
                                                         "status",
                                                         "nilai"
@@ -7314,6 +6828,75 @@
                 }
             }
         },
+        "/siswa/{id}/reset-password": {
+            "post": {
+                "operationId": "siswa.resetPassword",
+                "tags": [
+                    "Siswa"
+                ],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "const": "Password siswa berhasil direset ke \"12345678\"."
+                                        }
+                                    },
+                                    "required": [
+                                        "success",
+                                        "message"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "const": "Akun user untuk siswa ini tidak ditemukan."
+                                        }
+                                    },
+                                    "required": [
+                                        "success",
+                                        "message"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            }
+        },
         "/tugas/form-data": {
             "get": {
                 "operationId": "tugas.formData",
@@ -7563,12 +7146,6 @@
                                         "type": "number",
                                         "minimum": 0,
                                         "maximum": 100
-                                    },
-                                    "catatan": {
-                                        "type": [
-                                            "string",
-                                            "null"
-                                        ]
                                     }
                                 }
                             }
@@ -7989,6 +7566,29 @@
                     "422": {
                         "$ref": "#/components/responses/ValidationException"
                     },
+                    "403": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "const": "Akses ditolak. Anda bukan pembuat tugas ini."
+                                        }
+                                    },
+                                    "required": [
+                                        "success",
+                                        "message"
+                                    ]
+                                }
+                            }
+                        }
+                    },
                     "401": {
                         "$ref": "#/components/responses/AuthenticationException"
                     }
@@ -8020,6 +7620,846 @@
                                         "message": {
                                             "type": "string",
                                             "const": "Tugas berhasil dihapus"
+                                        }
+                                    },
+                                    "required": [
+                                        "message"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "const": "Akses ditolak. Anda bukan pembuat tugas ini."
+                                        }
+                                    },
+                                    "required": [
+                                        "success",
+                                        "message"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            }
+        },
+        "/tugas-susulan": {
+            "get": {
+                "operationId": "tugas-susulan.index",
+                "description": "Menampilkan daftar seluruh tugas susulan yang dikelola oleh guru yang sedang login.\nDapat difilter berdasarkan tugas_id atau siswa_id.",
+                "summary": "Tampilkan daftar tugas susulan (untuk Guru)",
+                "tags": [
+                    "TugasSusulan"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean"
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "integer"
+                                                    },
+                                                    "tugas_id": {
+                                                        "type": "integer"
+                                                    },
+                                                    "siswa_id": {
+                                                        "type": "integer"
+                                                    },
+                                                    "nama_siswa": {
+                                                        "type": "string"
+                                                    },
+                                                    "judul_tugas": {
+                                                        "anyOf": [
+                                                            {
+                                                                "type": "string"
+                                                            },
+                                                            {
+                                                                "type": "null"
+                                                            }
+                                                        ]
+                                                    },
+                                                    "deskripsi_tugas": {
+                                                        "type": [
+                                                            "string",
+                                                            "null"
+                                                        ]
+                                                    },
+                                                    "nama_mapel": {
+                                                        "type": [
+                                                            "string",
+                                                            "null"
+                                                        ]
+                                                    },
+                                                    "deadline_susulan": {
+                                                        "type": "string"
+                                                    },
+                                                    "keterangan": {
+                                                        "type": [
+                                                            "string",
+                                                            "null"
+                                                        ]
+                                                    },
+                                                    "status": {
+                                                        "type": "string",
+                                                        "const": "Terlambat"
+                                                    },
+                                                    "pengumpulan": {
+                                                        "type": [
+                                                            "object",
+                                                            "null"
+                                                        ],
+                                                        "properties": {
+                                                            "id": {
+                                                                "type": "string"
+                                                            },
+                                                            "file": {
+                                                                "type": "string"
+                                                            },
+                                                            "link": {
+                                                                "type": "string"
+                                                            },
+                                                            "submitted_at": {
+                                                                "type": "string"
+                                                            },
+                                                            "nilai": {
+                                                                "anyOf": [
+                                                                    {
+                                                                        "type": "string"
+                                                                    },
+                                                                    {
+                                                                        "type": "string",
+                                                                        "enum": [
+                                                                            "Belum dinilai"
+                                                                        ]
+                                                                    }
+                                                                ]
+                                                            }
+                                                        },
+                                                        "required": [
+                                                            "id",
+                                                            "file",
+                                                            "link",
+                                                            "submitted_at",
+                                                            "nilai"
+                                                        ]
+                                                    }
+                                                },
+                                                "required": [
+                                                    "id",
+                                                    "tugas_id",
+                                                    "siswa_id",
+                                                    "nama_siswa",
+                                                    "judul_tugas",
+                                                    "deskripsi_tugas",
+                                                    "nama_mapel",
+                                                    "deadline_susulan",
+                                                    "keterangan",
+                                                    "status",
+                                                    "pengumpulan"
+                                                ]
+                                            }
+                                        }
+                                    },
+                                    "required": [
+                                        "success",
+                                        "data"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "const": "Data guru tidak ditemukan."
+                                        }
+                                    },
+                                    "required": [
+                                        "message"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "const": "Unauthorized. Hanya guru yang dapat melihat tugas susulan."
+                                        }
+                                    },
+                                    "required": [
+                                        "message"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            },
+            "post": {
+                "operationId": "tugas-susulan.store",
+                "description": "Membuat atau memperbarui tugas susulan untuk siswa tertentu pada tugas tertentu dengan tenggat waktu baru.\nDapat ditambahkan judul susulan dan deskripsi susulan baru jika tugas susulannya berbeda.",
+                "summary": "Berikan tugas susulan ke siswa (untuk Guru)",
+                "tags": [
+                    "TugasSusulan"
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "tugas_id": {
+                                        "type": "integer"
+                                    },
+                                    "siswa_id": {
+                                        "type": "integer"
+                                    },
+                                    "deadline": {
+                                        "type": "string",
+                                        "format": "date-time"
+                                    },
+                                    "judul": {
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ],
+                                        "maxLength": 255
+                                    },
+                                    "deskripsi": {
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
+                                    },
+                                    "keterangan": {
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
+                                    }
+                                },
+                                "required": [
+                                    "tugas_id",
+                                    "siswa_id",
+                                    "deadline"
+                                ]
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "const": "Tugas susulan berhasil diberikan."
+                                        },
+                                        "data": {
+                                            "$ref": "#/components/schemas/TugasSusulan"
+                                        }
+                                    },
+                                    "required": [
+                                        "success",
+                                        "message",
+                                        "data"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "anyOf": [
+                                        {
+                                            "type": "object",
+                                            "properties": {
+                                                "message": {
+                                                    "type": "string",
+                                                    "const": "Akses ditolak. Anda bukan pembuat tugas ini."
+                                                }
+                                            },
+                                            "required": [
+                                                "message"
+                                            ]
+                                        },
+                                        {
+                                            "type": "object",
+                                            "properties": {
+                                                "message": {
+                                                    "type": "string",
+                                                    "const": "Unauthorized. Hanya guru yang dapat memberikan tugas susulan."
+                                                }
+                                            },
+                                            "required": [
+                                                "message"
+                                            ]
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "const": "Data guru tidak ditemukan."
+                                        }
+                                    },
+                                    "required": [
+                                        "message"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "$ref": "#/components/responses/ValidationException"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            }
+        },
+        "/tugas-susulan/{id}": {
+            "delete": {
+                "operationId": "tugas-susulan.destroy",
+                "description": "Menghapus tugas susulan berdasarkan ID yang membatalkan pemberian tugas susulan tersebut.",
+                "summary": "Batalkan tugas susulan (untuk Guru)",
+                "tags": [
+                    "TugasSusulan"
+                ],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "const": "Tugas susulan berhasil dibatalkan."
+                                        }
+                                    },
+                                    "required": [
+                                        "success",
+                                        "message"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "anyOf": [
+                                        {
+                                            "type": "object",
+                                            "properties": {
+                                                "message": {
+                                                    "type": "string",
+                                                    "const": "Akses ditolak. Anda tidak berwenang menghapus tugas susulan ini."
+                                                }
+                                            },
+                                            "required": [
+                                                "message"
+                                            ]
+                                        },
+                                        {
+                                            "type": "object",
+                                            "properties": {
+                                                "message": {
+                                                    "type": "string",
+                                                    "const": "Unauthorized. Hanya guru yang dapat menghapus tugas susulan."
+                                                }
+                                            },
+                                            "required": [
+                                                "message"
+                                            ]
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "anyOf": [
+                                        {
+                                            "type": "object",
+                                            "properties": {
+                                                "message": {
+                                                    "type": "string",
+                                                    "const": "Tugas susulan tidak ditemukan."
+                                                }
+                                            },
+                                            "required": [
+                                                "message"
+                                            ]
+                                        },
+                                        {
+                                            "type": "object",
+                                            "properties": {
+                                                "message": {
+                                                    "type": "string",
+                                                    "const": "Data guru tidak ditemukan."
+                                                }
+                                            },
+                                            "required": [
+                                                "message"
+                                            ]
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            }
+        },
+        "/siswa/tugas-susulan": {
+            "get": {
+                "operationId": "tugasSusulan.siswaIndex",
+                "description": "Menampilkan daftar tugas susulan yang harus dikerjakan oleh siswa yang sedang login.",
+                "summary": "Tampilkan daftar tugas susulan siswa (untuk Siswa)",
+                "tags": [
+                    "TugasSusulan"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean"
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "integer"
+                                                    },
+                                                    "tugas_id": {
+                                                        "type": "integer"
+                                                    },
+                                                    "judul_tugas": {
+                                                        "anyOf": [
+                                                            {
+                                                                "type": "string"
+                                                            },
+                                                            {
+                                                                "type": "null"
+                                                            }
+                                                        ]
+                                                    },
+                                                    "deskripsi_tugas": {
+                                                        "type": [
+                                                            "string",
+                                                            "null"
+                                                        ]
+                                                    },
+                                                    "nama_mapel": {
+                                                        "type": [
+                                                            "string",
+                                                            "null"
+                                                        ]
+                                                    },
+                                                    "guru": {
+                                                        "type": [
+                                                            "string",
+                                                            "null"
+                                                        ]
+                                                    },
+                                                    "deadline_susulan": {
+                                                        "type": "string"
+                                                    },
+                                                    "original_deadline": {
+                                                        "type": "string"
+                                                    },
+                                                    "keterangan": {
+                                                        "type": [
+                                                            "string",
+                                                            "null"
+                                                        ]
+                                                    },
+                                                    "status": {
+                                                        "type": "string",
+                                                        "const": "Terlambat"
+                                                    },
+                                                    "pengumpulan": {
+                                                        "type": [
+                                                            "object",
+                                                            "null"
+                                                        ],
+                                                        "properties": {
+                                                            "id": {
+                                                                "type": "string"
+                                                            },
+                                                            "file": {
+                                                                "type": "string"
+                                                            },
+                                                            "link": {
+                                                                "type": "string"
+                                                            },
+                                                            "submitted_at": {
+                                                                "type": "string"
+                                                            },
+                                                            "nilai": {
+                                                                "anyOf": [
+                                                                    {
+                                                                        "type": "string"
+                                                                    },
+                                                                    {
+                                                                        "type": "string",
+                                                                        "enum": [
+                                                                            "Belum dinilai"
+                                                                        ]
+                                                                    }
+                                                                ]
+                                                            }
+                                                        },
+                                                        "required": [
+                                                            "id",
+                                                            "file",
+                                                            "link",
+                                                            "submitted_at",
+                                                            "nilai"
+                                                        ]
+                                                    }
+                                                },
+                                                "required": [
+                                                    "id",
+                                                    "tugas_id",
+                                                    "judul_tugas",
+                                                    "deskripsi_tugas",
+                                                    "nama_mapel",
+                                                    "guru",
+                                                    "deadline_susulan",
+                                                    "original_deadline",
+                                                    "keterangan",
+                                                    "status",
+                                                    "pengumpulan"
+                                                ]
+                                            }
+                                        }
+                                    },
+                                    "required": [
+                                        "success",
+                                        "data"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "const": "Data siswa tidak ditemukan."
+                                        }
+                                    },
+                                    "required": [
+                                        "message"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "const": "Unauthorized. Hanya siswa yang dapat melihat tugas susulan."
+                                        }
+                                    },
+                                    "required": [
+                                        "message"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            }
+        },
+        "/siswa/tugas-susulan/{id}": {
+            "get": {
+                "operationId": "tugasSusulan.siswaShow",
+                "description": "Menampilkan informasi detail satu tugas susulan berdasarkan ID.",
+                "summary": "Tampilkan detail tugas susulan siswa (untuk Siswa)",
+                "tags": [
+                    "TugasSusulan"
+                ],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean"
+                                        },
+                                        "data": {
+                                            "type": "object",
+                                            "properties": {
+                                                "id": {
+                                                    "type": "string"
+                                                },
+                                                "tugas_id": {
+                                                    "type": "string"
+                                                },
+                                                "judul_tugas": {
+                                                    "type": "string"
+                                                },
+                                                "deskripsi_tugas": {
+                                                    "type": "string"
+                                                },
+                                                "nama_mapel": {
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
+                                                },
+                                                "guru": {
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
+                                                },
+                                                "deadline_susulan": {
+                                                    "type": "string"
+                                                },
+                                                "original_deadline": {
+                                                    "type": "string"
+                                                },
+                                                "keterangan": {
+                                                    "type": "string"
+                                                },
+                                                "status": {
+                                                    "type": "string",
+                                                    "const": "Terlambat"
+                                                },
+                                                "pengumpulan": {
+                                                    "type": [
+                                                        "object",
+                                                        "null"
+                                                    ],
+                                                    "properties": {
+                                                        "id": {
+                                                            "type": "string"
+                                                        },
+                                                        "file": {
+                                                            "type": "string"
+                                                        },
+                                                        "link": {
+                                                            "type": "string"
+                                                        },
+                                                        "submitted_at": {
+                                                            "type": "string"
+                                                        },
+                                                        "nilai": {
+                                                            "anyOf": [
+                                                                {
+                                                                    "type": "string"
+                                                                },
+                                                                {
+                                                                    "type": "string",
+                                                                    "enum": [
+                                                                        "Belum dinilai"
+                                                                    ]
+                                                                }
+                                                            ]
+                                                        }
+                                                    },
+                                                    "required": [
+                                                        "id",
+                                                        "file",
+                                                        "link",
+                                                        "submitted_at",
+                                                        "nilai"
+                                                    ]
+                                                }
+                                            },
+                                            "required": [
+                                                "id",
+                                                "tugas_id",
+                                                "judul_tugas",
+                                                "deskripsi_tugas",
+                                                "nama_mapel",
+                                                "guru",
+                                                "deadline_susulan",
+                                                "original_deadline",
+                                                "keterangan",
+                                                "status",
+                                                "pengumpulan"
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "success",
+                                        "data"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "anyOf": [
+                                        {
+                                            "type": "object",
+                                            "properties": {
+                                                "message": {
+                                                    "type": "string",
+                                                    "const": "Tugas susulan tidak ditemukan atau Anda tidak memiliki akses."
+                                                }
+                                            },
+                                            "required": [
+                                                "message"
+                                            ]
+                                        },
+                                        {
+                                            "type": "object",
+                                            "properties": {
+                                                "message": {
+                                                    "type": "string",
+                                                    "const": "Data siswa tidak ditemukan."
+                                                }
+                                            },
+                                            "required": [
+                                                "message"
+                                            ]
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "const": "Unauthorized."
                                         }
                                     },
                                     "required": [
@@ -8152,6 +8592,280 @@
                     }
                 }
             }
+        },
+        "/siswa/import": {
+            "post": {
+                "operationId": "userImport.importSiswa",
+                "description": "Endpoint ini digunakan oleh Admin untuk mengimport data siswa secara massal dari file Excel (.xlsx, .xls) atau CSV.\nProses import menggunakan database transaction, sehingga jika ada satu baris yang salah, seluruh proses akan dibatalkan untuk menjaga konsistensi data.\n\n**Format Template Excel (Mulai Kolom A):**\n- **Kolom A (NIS)**: Nomor Induk Siswa. Wajib, unik, dan akan menjadi username login siswa.\n- **Kolom B (Nama)**: Nama lengkap siswa. Wajib.\n- **Kolom C (Jenis Kelamin)**: L/P atau Laki-laki/Perempuan. Wajib (otomatis dinormalisasi).\n- **Kolom D (Rombel)**: ID Rombel (angka) atau Nama Rombel (misal: \"X PPLG 1\", case-insensitive). Wajib.\n- **Kolom E (Password)**: Password login siswa. Wajib, minimal 6 karakter.\n\n*Catatan: Baris pertama file harus berupa header (judul kolom) dan akan dilewati secara otomatis.*",
+                "summary": "Import Siswa dari Excel/CSV",
+                "tags": [
+                    "UserImport"
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "file": {
+                                        "type": "string",
+                                        "format": "binary",
+                                        "contentMediaType": "application/octet-stream",
+                                        "maxLength": 10240
+                                    }
+                                },
+                                "required": [
+                                    "file"
+                                ]
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "500": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean"
+                                        },
+                                        "message": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "success",
+                                        "message"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "201": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean"
+                                        },
+                                        "message": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "type": "object",
+                                            "properties": {
+                                                "total_imported": {
+                                                    "type": "integer"
+                                                }
+                                            },
+                                            "required": [
+                                                "total_imported"
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "success",
+                                        "message",
+                                        "data"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "$ref": "#/components/responses/ValidationException"
+                    },
+                    "400": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "anyOf": [
+                                        {
+                                            "type": "object",
+                                            "properties": {
+                                                "success": {
+                                                    "type": "boolean"
+                                                },
+                                                "message": {
+                                                    "type": "string",
+                                                    "const": "File Excel kosong atau hanya berisi header."
+                                                }
+                                            },
+                                            "required": [
+                                                "success",
+                                                "message"
+                                            ]
+                                        },
+                                        {
+                                            "type": "object",
+                                            "properties": {
+                                                "success": {
+                                                    "type": "boolean"
+                                                },
+                                                "message": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "required": [
+                                                "success",
+                                                "message"
+                                            ]
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            }
+        },
+        "/guru/import": {
+            "post": {
+                "operationId": "userImport.importGuru",
+                "description": "Endpoint ini digunakan oleh Admin untuk mengimport data guru secara massal dari file Excel (.xlsx, .xls) atau CSV.\nProses import menggunakan database transaction, sehingga jika ada satu baris yang salah, seluruh proses akan dibatalkan untuk menjaga konsistensi data.\n\n**Format Template Excel (Mulai Kolom A):**\n- **Kolom A (NIK)**: Nomor Induk Karyawan/Guru. Wajib, unik, dan akan menjadi username login guru.\n- **Kolom B (Nama)**: Nama lengkap guru beserta gelar. Wajib.\n- **Kolom C (Jenis Kelamin)**: L/P atau Laki-laki/Perempuan. Wajib (otomatis dinormalisasi).\n- **Kolom D (Password)**: Password login guru. Wajib, minimal 6 karakter.\n\n*Catatan: Baris pertama file harus berupa header (judul kolom) dan akan dilewati secara otomatis.*",
+                "summary": "Import Guru dari Excel/CSV",
+                "tags": [
+                    "UserImport"
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "file": {
+                                        "type": "string",
+                                        "format": "binary",
+                                        "contentMediaType": "application/octet-stream",
+                                        "maxLength": 10240
+                                    }
+                                },
+                                "required": [
+                                    "file"
+                                ]
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "500": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean"
+                                        },
+                                        "message": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "success",
+                                        "message"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "201": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean"
+                                        },
+                                        "message": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "type": "object",
+                                            "properties": {
+                                                "total_imported": {
+                                                    "type": "integer"
+                                                }
+                                            },
+                                            "required": [
+                                                "total_imported"
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "success",
+                                        "message",
+                                        "data"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "$ref": "#/components/responses/ValidationException"
+                    },
+                    "400": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "anyOf": [
+                                        {
+                                            "type": "object",
+                                            "properties": {
+                                                "success": {
+                                                    "type": "boolean"
+                                                },
+                                                "message": {
+                                                    "type": "string",
+                                                    "const": "File Excel kosong atau hanya berisi header."
+                                                }
+                                            },
+                                            "required": [
+                                                "success",
+                                                "message"
+                                            ]
+                                        },
+                                        {
+                                            "type": "object",
+                                            "properties": {
+                                                "success": {
+                                                    "type": "boolean"
+                                                },
+                                                "message": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "required": [
+                                                "success",
+                                                "message"
+                                            ]
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            }
         }
     },
     "components": {
@@ -8199,72 +8913,6 @@
                 ],
                 "title": "AnggotaKelas"
             },
-            "BankSoal": {
-                "type": "object",
-                "properties": {
-                    "id": {
-                        "type": "integer"
-                    },
-                    "file_material_id": {
-                        "type": "integer"
-                    },
-                    "guru_id": {
-                        "type": "integer"
-                    },
-                    "mapel_id": {
-                        "type": "integer"
-                    },
-                    "judul": {
-                        "type": "string"
-                    },
-                    "status": {
-                        "type": "string"
-                    },
-                    "jumlah_soal": {
-                        "type": "integer"
-                    },
-                    "ai_prompt_used": {
-                        "type": [
-                            "string",
-                            "null"
-                        ]
-                    },
-                    "error_message": {
-                        "type": [
-                            "string",
-                            "null"
-                        ]
-                    },
-                    "created_at": {
-                        "type": [
-                            "string",
-                            "null"
-                        ],
-                        "format": "date-time"
-                    },
-                    "updated_at": {
-                        "type": [
-                            "string",
-                            "null"
-                        ],
-                        "format": "date-time"
-                    }
-                },
-                "required": [
-                    "id",
-                    "file_material_id",
-                    "guru_id",
-                    "mapel_id",
-                    "judul",
-                    "status",
-                    "jumlah_soal",
-                    "ai_prompt_used",
-                    "error_message",
-                    "created_at",
-                    "updated_at"
-                ],
-                "title": "BankSoal"
-            },
             "Diskusi": {
                 "type": "object",
                 "properties": {
@@ -8304,40 +8952,6 @@
                     "updated_at"
                 ],
                 "title": "Diskusi"
-            },
-            "GenerateSoalRequest": {
-                "type": "object",
-                "properties": {
-                    "tugas_id": {
-                        "type": "integer"
-                    },
-                    "materi_id": {
-                        "type": "integer"
-                    },
-                    "prompt": {
-                        "type": "string",
-                        "minLength": 10
-                    },
-                    "jumlah_soal": {
-                        "type": "integer",
-                        "minimum": 1,
-                        "maximum": 20
-                    },
-                    "tingkat_kesulitan": {
-                        "type": "string",
-                        "enum": [
-                            "mudah",
-                            "sedang",
-                            "sulit"
-                        ]
-                    }
-                },
-                "required": [
-                    "tugas_id",
-                    "materi_id",
-                    "prompt"
-                ],
-                "title": "GenerateSoalRequest"
             },
             "Guru": {
                 "type": "object",
@@ -8475,15 +9089,6 @@
                             "null"
                         ]
                     },
-                    "kelas_id": {
-                        "type": "integer"
-                    },
-                    "jurusan_id": {
-                        "type": [
-                            "integer",
-                            "null"
-                        ]
-                    },
                     "created_at": {
                         "type": [
                             "string",
@@ -8504,8 +9109,6 @@
                     "nama_mapel",
                     "kode_mapel",
                     "deskripsi",
-                    "kelas_id",
-                    "jurusan_id",
                     "created_at",
                     "updated_at"
                 ],
@@ -8587,12 +9190,6 @@
                     "score": {
                         "type": "integer"
                     },
-                    "catatan": {
-                        "type": [
-                            "string",
-                            "null"
-                        ]
-                    },
                     "created_at": {
                         "type": [
                             "string",
@@ -8613,7 +9210,6 @@
                     "pengumpulan_id",
                     "siswa_id",
                     "score",
-                    "catatan",
                     "created_at",
                     "updated_at"
                 ],
@@ -8637,7 +9233,7 @@
                             "null"
                         ]
                     },
-                    "catatan": {
+                    "link": {
                         "type": [
                             "string",
                             "null"
@@ -8646,12 +9242,6 @@
                     "nilai": {
                         "type": [
                             "integer",
-                            "null"
-                        ]
-                    },
-                    "feedback": {
-                        "type": [
-                            "string",
                             "null"
                         ]
                     },
@@ -8681,9 +9271,8 @@
                     "tugas_id",
                     "siswa_id",
                     "file",
-                    "catatan",
+                    "link",
                     "nilai",
-                    "feedback",
                     "submitted_at",
                     "created_at",
                     "updated_at"
@@ -8711,6 +9300,12 @@
                             "null"
                         ]
                     },
+                    "anggota_kelas_id": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ]
+                    },
                     "created_at": {
                         "type": [
                             "string",
@@ -8724,12 +9319,6 @@
                             "null"
                         ],
                         "format": "date-time"
-                    },
-                    "anggota_kelas_id": {
-                        "type": [
-                            "integer",
-                            "null"
-                        ]
                     }
                 },
                 "required": [
@@ -8738,9 +9327,9 @@
                     "deskripsi",
                     "user_id",
                     "mapel_id",
+                    "anggota_kelas_id",
                     "created_at",
-                    "updated_at",
-                    "anggota_kelas_id"
+                    "updated_at"
                 ],
                 "title": "Pengumuman"
             },
@@ -8902,15 +9491,25 @@
                         "type": "integer"
                     },
                     "file": {
-                        "type": "string",
+                        "type": [
+                            "string",
+                            "null"
+                        ],
                         "format": "binary",
                         "contentMediaType": "application/octet-stream",
                         "maxLength": 10240
+                    },
+                    "link": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "format": "uri",
+                        "maxLength": 1000
                     }
                 },
                 "required": [
-                    "tugas_id",
-                    "file"
+                    "tugas_id"
                 ],
                 "title": "StorePengumpulanRequest"
             },
@@ -8969,40 +9568,66 @@
                 ],
                 "title": "Tugas"
             },
-            "UpdateBankSoalRequest": {
+            "TugasSusulan": {
                 "type": "object",
                 "properties": {
-                    "pertanyaan": {
-                        "type": "string",
-                        "minLength": 10
+                    "id": {
+                        "type": "integer"
                     },
-                    "jawaban": {
+                    "tugas_id": {
+                        "type": "integer"
+                    },
+                    "siswa_id": {
+                        "type": "integer"
+                    },
+                    "judul": {
                         "type": [
                             "string",
                             "null"
                         ]
                     },
-                    "tingkat_kesulitan": {
-                        "type": "string",
-                        "enum": [
-                            "mudah",
-                            "sedang",
-                            "sulit"
+                    "deskripsi": {
+                        "type": [
+                            "string",
+                            "null"
                         ]
                     },
-                    "status": {
-                        "type": "string",
-                        "enum": [
-                            "draft",
-                            "published"
+                    "deadline": {
+                        "type": "string"
+                    },
+                    "keterangan": {
+                        "type": [
+                            "string",
+                            "null"
                         ]
                     },
-                    "urutan": {
-                        "type": "integer",
-                        "minimum": 0
+                    "created_at": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "format": "date-time"
+                    },
+                    "updated_at": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "format": "date-time"
                     }
                 },
-                "title": "UpdateBankSoalRequest"
+                "required": [
+                    "id",
+                    "tugas_id",
+                    "siswa_id",
+                    "judul",
+                    "deskripsi",
+                    "deadline",
+                    "keterangan",
+                    "created_at",
+                    "updated_at"
+                ],
+                "title": "TugasSusulan"
             },
             "User": {
                 "type": "object",

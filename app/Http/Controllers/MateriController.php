@@ -132,6 +132,18 @@ class MateriController extends Controller
     public function update(Request $request, $id)
     {
         $materi = Materi::findOrFail($id);
+        $user = auth()->user();
+
+        // Otorisasi: Pastikan guru yang mengupdate adalah pembuat materi ini
+        if ($user && $user->role === 'guru') {
+            if ($materi->guru_id !== $user->guru->id) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Akses ditolak. Anda bukan pembuat materi ini.'
+                ], 403);
+            }
+        }
+
         $payload = $request->validate([
             'judul' => 'sometimes|string|max:255',
             'deskripsi' => 'sometimes|string',
@@ -141,7 +153,7 @@ class MateriController extends Controller
             'guruId' => 'sometimes|exists:guru,id',
             'rombel_id' => 'sometimes|nullable|exists:rombel,id',
             'files' => 'sometimes|array',
-            'files.*' => 'file|max:20480',
+            'files.*' => 'file|mimes:pdf,doc,docx,xls,xlsx,ppt,pptx,txt,zip,rar,png,jpg,jpeg,gif,mp4,mkv,webm|max:20480',
             'youtube_urls.*' => 'sometimes|url',
             'youtube_urls' => 'sometimes',
         ]);
@@ -183,6 +195,14 @@ class MateriController extends Controller
 
         if (count($allFiles) > 0) {
             foreach ($allFiles as $file) {
+                // Pastikan format aman (karena file1/file2/file3 divalidasi manual di sini atau validator request)
+                $validator = \Validator::make(['file' => $file], [
+                    'file' => 'file|mimes:pdf,doc,docx,xls,xlsx,ppt,pptx,txt,zip,rar,png,jpg,jpeg,gif,mp4,mkv,webm|max:20480'
+                ]);
+                if ($validator->fails()) {
+                    continue; // Skip jika tidak valid
+                }
+
                 $filename = time() . '_' . $file->getClientOriginalName();
                 $path = $file->storeAs('materi_files', $filename, 'public');
                 
@@ -202,6 +222,8 @@ class MateriController extends Controller
                     'nama_file' => $file->getClientOriginalName(),
                 ]);
             }
+        }
+
         $ytInput = $request->input('youtube_urls') ?? $request->input('youtube_url') ?? $request->input('link_youtube') ?? $request->input('youtube');
         if ($ytInput) {
             $urls = $ytInput;
@@ -236,18 +258,26 @@ class MateriController extends Controller
             'data' => $materi,
         ]);
     }
-}
+
     public function destroy($id)
     {
         $materi = Materi::with('files')->findOrFail($id);
+        $user = auth()->user();
+
+        // Otorisasi: Pastikan guru yang menghapus adalah pembuat materi ini
+        if ($user && $user->role === 'guru') {
+            if ($materi->guru_id !== $user->guru->id) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Akses ditolak. Anda bukan pembuat materi ini.'
+                ], 403);
+            }
+        }
 
         // Hapus file fisik dari storage
         foreach ($materi->files as $file) {
             if ($file->tipe !== 'YOUTUBE') {
-                // Ekstrak path relatif dari URL, misalnya: http://localhost:8000/storage/materi_files/namafile.pdf -> materi_files/namafile.pdf
-                // Perlu diperhatikan url asset('storage/' . $path)
                 $relativePath = str_replace(asset('storage') . '/', '', $file->url);
-                
                 if (Storage::disk('public')->exists($relativePath)) {
                     Storage::disk('public')->delete($relativePath);
                 }
@@ -261,3 +291,4 @@ class MateriController extends Controller
         ]);
     }
 }
+
