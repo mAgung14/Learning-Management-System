@@ -18,6 +18,7 @@ use App\Http\Controllers\AnggotaKelasController;
 use App\Http\Controllers\RombelController;
 use App\Http\Controllers\GuruMapelController;
 use App\Http\Controllers\PengumumanController;
+use App\Events\ForumMessageSent;
 
 use Illuminate\Support\Facades\Broadcast;
 
