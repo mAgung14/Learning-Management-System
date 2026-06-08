@@ -9,6 +9,7 @@
         "php": "^8.3",
         "ext-bcmath": "*",
         "ext-gd": "*",
+        "ext-pcntl": "*",
         "ext-zip": "*",
         "dedoc/scramble": "^0.13.22",
         "laravel/framework": "^13.0",
@@ -88,7 +89,10 @@
             "pestphp/pest-plugin": true,
             "php-http/discovery": true
         },
-        "platform-check": false
+        "platform-check": false,
+        "platform": {
+            "ext-pcntl": "8.3"
+        }
     },
     "minimum-stability": "stable",
     "prefer-stable": true
