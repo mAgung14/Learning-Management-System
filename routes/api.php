@@ -26,6 +26,7 @@ Broadcast::routes(['middleware' => ['auth:api']]);
 
 // Cek apakah ada view welcome
 Route::get('/', function () {
+    
     return view('welcome');
 })->name('home');
 

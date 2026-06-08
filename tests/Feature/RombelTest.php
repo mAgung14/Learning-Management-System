@@ -223,4 +223,182 @@ class RombelTest extends TestCase
             'id' => $this->siswa->user_id,
         ]);
     }
+
+    public function test_promote_clears_old_rombel_content()
+    {
+        // Setup Guru
+        $guruUser = User::create([
+            'username' => 'guru_test_promote',
+            'password' => bcrypt('password123'),
+            'role' => 'guru',
+        ]);
+        $guru = \App\Models\Guru::create([
+            'user_id' => $guruUser->id,
+            'nik' => '77777',
+            'nama' => 'Guru Test',
+            'jenis_kelamin' => 'Laki-laki',
+        ]);
+
+        // 1. Setup anggota kelas
+        $anggota = AnggotaKelas::create([
+            'siswa_id' => $this->siswa->id,
+            'rombel_id' => $this->rombelSource->id,
+        ]);
+
+        // 2. Hubungkan rombelSource dengan mapel
+        \DB::table('rombel_mapel')->insert([
+            'rombel_id' => $this->rombelSource->id,
+            'mata_pelajaran_id' => $this->mapel->id,
+        ]);
+
+        // 3. Buat konten (materi, tugas, diskusi, pengumuman)
+        $materi = \App\Models\Materi::create([
+            'judul' => 'Materi Matematika',
+            'deskripsi' => 'Pengenalan Aljabar',
+            'mapel_id' => $this->mapel->id,
+            'rombel_id' => $this->rombelSource->id,
+            'guru_id' => $guru->id,
+        ]);
+
+        $tugas = \App\Models\Tugas::create([
+            'judul' => 'Tugas Aljabar',
+            'deskripsi' => 'Kerjakan hal 10',
+            'deadline' => now()->addDays(7),
+            'mapel_id' => $this->mapel->id,
+            'rombel_id' => $this->rombelSource->id,
+            'guru_id' => $guru->id,
+        ]);
+
+        $diskusi = \App\Models\Diskusi::create([
+            'mata_pelajaran_id' => $this->mapel->id,
+            'user_id' => $this->admin->id,
+            'pesan' => 'Ada pertanyaan?',
+        ]);
+
+        $pengumuman = \App\Models\Pengumuman::create([
+            'judul' => 'Pengumuman Ujian',
+            'deskripsi' => 'Ujian minggu depan',
+            'user_id' => $this->admin->id,
+            'mapel_id' => $this->mapel->id,
+        ]);
+
+        // Pastikan semua data ada di database sebelum promote
+        $this->assertDatabaseHas('materi', ['id' => $materi->id]);
+        $this->assertDatabaseHas('tugas', ['id' => $tugas->id]);
+        $this->assertDatabaseHas('diskusis', ['id' => $diskusi->id]);
+        $this->assertDatabaseHas('pengumuman', ['id' => $pengumuman->id]);
+        $this->assertDatabaseHas('mata_pelajaran', ['id' => $this->mapel->id]);
+        $this->assertDatabaseHas('rombel_mapel', [
+            'rombel_id' => $this->rombelSource->id,
+            'mata_pelajaran_id' => $this->mapel->id,
+        ]);
+
+        // 4. Lakukan promote (kenaikan kelas)
+        $response = $this->actingAs($this->admin, 'api')
+            ->postJson('/api/rombel/promote', [
+                'source_rombel_id' => $this->rombelSource->id,
+                'target_rombel_id' => $this->rombelTarget->id,
+            ]);
+
+        $response->assertStatus(200);
+
+        // 5. Verifikasi bahwa data konten di rombelSource terhapus
+        $this->assertDatabaseMissing('materi', ['id' => $materi->id]);
+        $this->assertDatabaseMissing('tugas', ['id' => $tugas->id]);
+        $this->assertDatabaseMissing('diskusis', ['id' => $diskusi->id]);
+        $this->assertDatabaseMissing('pengumuman', ['id' => $pengumuman->id]);
+
+        // 6. Verifikasi bahwa data master mata_pelajaran & relasi rombel_mapel tetap ada
+        $this->assertDatabaseHas('mata_pelajaran', ['id' => $this->mapel->id]);
+        $this->assertDatabaseHas('rombel_mapel', [
+            'rombel_id' => $this->rombelSource->id,
+            'mata_pelajaran_id' => $this->mapel->id,
+        ]);
+    }
+
+    public function test_graduate_clears_rombel_content()
+    {
+        // Setup Guru
+        $guruUser = User::create([
+            'username' => 'guru_test_graduate',
+            'password' => bcrypt('password123'),
+            'role' => 'guru',
+        ]);
+        $guru = \App\Models\Guru::create([
+            'user_id' => $guruUser->id,
+            'nik' => '88888',
+            'nama' => 'Guru Test 2',
+            'jenis_kelamin' => 'Laki-laki',
+        ]);
+
+        // 1. Setup anggota kelas
+        $anggota = AnggotaKelas::create([
+            'siswa_id' => $this->siswa->id,
+            'rombel_id' => $this->rombelSource->id,
+        ]);
+
+        // 2. Hubungkan rombelSource dengan mapel
+        \DB::table('rombel_mapel')->insert([
+            'rombel_id' => $this->rombelSource->id,
+            'mata_pelajaran_id' => $this->mapel->id,
+        ]);
+
+        // 3. Buat konten (materi, tugas, diskusi, pengumuman)
+        $materi = \App\Models\Materi::create([
+            'judul' => 'Materi Biologi',
+            'deskripsi' => 'Sel Hewan',
+            'mapel_id' => $this->mapel->id,
+            'rombel_id' => $this->rombelSource->id,
+            'guru_id' => $guru->id,
+        ]);
+
+        $tugas = \App\Models\Tugas::create([
+            'judul' => 'Tugas Sel',
+            'deskripsi' => 'Gambar sel',
+            'deadline' => now()->addDays(7),
+            'mapel_id' => $this->mapel->id,
+            'rombel_id' => $this->rombelSource->id,
+            'guru_id' => $guru->id,
+        ]);
+
+        $diskusi = \App\Models\Diskusi::create([
+            'mata_pelajaran_id' => $this->mapel->id,
+            'user_id' => $this->admin->id,
+            'pesan' => 'Ada pertanyaan tentang sel?',
+        ]);
+
+        $pengumuman = \App\Models\Pengumuman::create([
+            'judul' => 'Pengumuman Biologi',
+            'deskripsi' => 'Praktikum sel',
+            'user_id' => $this->admin->id,
+            'mapel_id' => $this->mapel->id,
+        ]);
+
+        // Pastikan semua data ada di database sebelum graduate
+        $this->assertDatabaseHas('materi', ['id' => $materi->id]);
+        $this->assertDatabaseHas('tugas', ['id' => $tugas->id]);
+        $this->assertDatabaseHas('diskusis', ['id' => $diskusi->id]);
+        $this->assertDatabaseHas('pengumuman', ['id' => $pengumuman->id]);
+
+        // 4. Lakukan graduate (kelulusan)
+        $response = $this->actingAs($this->admin, 'api')
+            ->postJson('/api/rombel/graduate', [
+                'rombel_id' => $this->rombelSource->id,
+            ]);
+
+        $response->assertStatus(200);
+
+        // 5. Verifikasi bahwa data konten terhapus
+        $this->assertDatabaseMissing('materi', ['id' => $materi->id]);
+        $this->assertDatabaseMissing('tugas', ['id' => $tugas->id]);
+        $this->assertDatabaseMissing('diskusis', ['id' => $diskusi->id]);
+        $this->assertDatabaseMissing('pengumuman', ['id' => $pengumuman->id]);
+
+        // 6. Verifikasi bahwa data master mata_pelajaran & relasi rombel_mapel tetap ada
+        $this->assertDatabaseHas('mata_pelajaran', ['id' => $this->mapel->id]);
+        $this->assertDatabaseHas('rombel_mapel', [
+            'rombel_id' => $this->rombelSource->id,
+            'mata_pelajaran_id' => $this->mapel->id,
+        ]);
+    }
 }

@@ -20,8 +20,8 @@
     *   **Siswa**: Mengakses materi, mengunduh penugasan, mengirimkan tugas, serta berpartisipasi dalam diskusi kelas.
 
 ### 2. Manajemen Rombel & Kenaikan Kelas Otomatis
-*   **Mekanisme Kenaikan Kelas (Class Promotion)**: Memindahkan siswa antar Rombongan Belajar (Rombel) secara massal (misal: X -> XI -> XII) serta menyinkronkan jurusan siswa secara otomatis.
-*   **Kelulusan Massal (Graduation)**: Memproses kelulusan siswa kelas XII secara massal dengan opsi **hapus akun secara bersih** (`delete`) atau **lepas dari rombel aktif** untuk dijadikan alumni (`detach`).
+*   **Mekanisme Kenaikan Kelas (Class Promotion)**: Memindahkan siswa antar Rombongan Belajar (Rombel) secara massal (misal: X -> XI -> XII) dan menyinkronkan jurusan siswa secara otomatis. Bersamaan dengan proses ini, sistem **secara otomatis membersihkan konten kelas asal** (menghapus materi, tugas, diskusi/obrolan, pengumuman, serta file fisiknya di storage) untuk menyambut angkatan berikutnya, namun **tetap mempertahankan mata pelajaran** dan penugasan guru yang melekat pada rombel tersebut.
+*   **Kelulusan Massal (Graduation)**: Memproses kelulusan siswa kelas XII secara massal dengan opsi **hapus akun secara bersih** (`delete`) atau **lepas dari rombel aktif** untuk dijadikan alumni (`detach`). Proses ini juga **secara otomatis membersihkan konten kelas lama** (materi, tugas, diskusi/obrolan, pengumuman, serta file fisiknya di storage) dengan tetap mempertahankan daftar mata pelajaran dan gurunya.
 
 ### 3. Manajemen Tugas & Pengumpulan Fleksibel
 *   Siswa dapat mengumpulkan tugas dalam bentuk **file fisik (dokumen/gambar)** atau melampirkan **link eksternal (Google Drive, Figma, GitHub, dll.)**.

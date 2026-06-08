@@ -9,6 +9,7 @@ use App\Models\Kelas;
 use App\Models\Siswa;
 use Validator;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class RombelController extends Controller
 {
@@ -272,7 +273,10 @@ class RombelController extends Controller
             ], 400);
         }
 
-        \DB::transaction(function () use ($anggotaList, $targetRombel) {
+        \DB::transaction(function () use ($anggotaList, $targetRombel, $sourceRombel) {
+            // Bersihkan konten kelas asal terlebih dahulu sebelum memindahkan siswa
+            $this->cleanupRombelContent($sourceRombel->id);
+
             foreach ($anggotaList as $anggota) {
                 // Update rombel_id ke target rombel
                 $anggota->update([
@@ -314,7 +318,10 @@ class RombelController extends Controller
         }
 
         $siswas = Siswa::whereIn('id', $siswaIds)->get();
-        \DB::transaction(function () use ($siswas) {
+        \DB::transaction(function () use ($siswas, $rombelId) {
+            // Bersihkan konten kelas terlebih dahulu sebelum menghapus siswa
+            $this->cleanupRombelContent($rombelId);
+
             foreach ($siswas as $siswa) {
                 if ($siswa->user_id) {
                     \App\Models\User::destroy($siswa->user_id);
@@ -329,5 +336,59 @@ class RombelController extends Controller
             'message' => "Berhasil meluluskan & menghapus {$totalSiswa} siswa beserta akunnya.",
             'total_processed' => $totalSiswa
         ]);
+    }
+
+    /**
+     * Bersihkan isi kelas (materi, tugas, diskusi, pengumuman) untuk rombel tertentu.
+     */
+    private function cleanupRombelContent($rombelId)
+    {
+        // 1. Ambil materi dan hapus file fisiknya dari storage
+        $materis = \App\Models\Materi::with('files')->where('rombel_id', $rombelId)->get();
+        foreach ($materis as $materi) {
+            foreach ($materi->files as $file) {
+                if ($file->tipe !== 'YOUTUBE') {
+                    $relativePath = str_replace(asset('storage') . '/', '', $file->url);
+                    if (Storage::disk('public')->exists($relativePath)) {
+                        Storage::disk('public')->delete($relativePath);
+                    }
+                }
+            }
+            $materi->delete(); // Ini memicu cascade delete di DB untuk file_material
+        }
+
+        // 2. Ambil tugas untuk menghapus file fisik pengumpulan dari storage
+        $tugasList = \App\Models\Tugas::with('pengumpulan')->where('rombel_id', $rombelId)->get();
+        foreach ($tugasList as $tugas) {
+            foreach ($tugas->pengumpulan as $pengumpulan) {
+                if ($pengumpulan->file) {
+                    $relativePath = str_replace(asset('storage') . '/', '', $pengumpulan->file);
+                    if (Storage::disk('public')->exists($relativePath)) {
+                        Storage::disk('public')->delete($relativePath);
+                    }
+                }
+            }
+            $tugas->delete(); // Ini memicu cascade delete di DB untuk pengumpulans, dll.
+        }
+
+        // 3. Ambil mapel_ids yang terhubung ke rombel ini via rombel_mapel
+        $mapelIds = \DB::table('rombel_mapel')
+            ->where('rombel_id', $rombelId)
+            ->pluck('mata_pelajaran_id')
+            ->toArray();
+
+        if (!empty($mapelIds)) {
+            // 4. Hapus diskusi/obrolan yang terhubung ke mapel-mapel tersebut
+            \App\Models\Diskusi::whereIn('mata_pelajaran_id', $mapelIds)->delete();
+
+            // 5. Hapus pengumuman yang terhubung ke mapel-mapel tersebut
+            \App\Models\Pengumuman::whereIn('mapel_id', $mapelIds)->delete();
+        }
+
+        // 6. Hapus pengumuman yang terhubung ke anggota_kelas yang ada di rombel ini
+        $anggotaKelasIds = \App\Models\AnggotaKelas::where('rombel_id', $rombelId)->pluck('id')->toArray();
+        if (!empty($anggotaKelasIds)) {
+            \App\Models\Pengumuman::whereIn('anggota_kelas_id', $anggotaKelasIds)->delete();
+        }
     }
 }
