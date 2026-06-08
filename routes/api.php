@@ -26,14 +26,17 @@ Broadcast::routes(['middleware' => ['auth:api']]);
 
 // Cek apakah ada view welcome
 Route::get('/', function () {
-    
+
     return view('welcome');
 })->name('home');
 
-Route::get('/test', function () {
-    return response()->json([
-        'status' => 'success'
-    ]);
+Route::get('/test-reverb', function () {
+
+    event(new ForumMessageSent([
+        'message' => 'Halo dari Railway'
+    ]));
+
+    return 'ok';
 });
 /*
 |--------------------------------------------------------------------------
