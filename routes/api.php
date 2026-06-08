@@ -21,9 +21,19 @@ use App\Http\Controllers\PengumumanController;
 use App\Events\ForumMessageSent;
 
 use Illuminate\Support\Facades\Broadcast;
+use App\Http\Controllers\BroadcastingAuthController;
 
 // Broadcasting Auth Route (Private Channels)
+// Broadcast::routes() registers /broadcasting/auth on the web guard — kept for
+// compatibility but the explicit API route below is what the frontend uses.
 Broadcast::routes(['middleware' => ['auth:api']]);
+
+// Explicit broadcasting auth endpoint for JWT-authenticated API clients.
+// Frontend (Laravel Echo) is configured to hit /api/broadcasting/auth.
+// This always returns valid JSON and uses the reverb/pusher broadcaster to
+// generate the correct HMAC-SHA256 signature from REVERB_APP_SECRET.
+Route::post('/broadcasting/auth', [BroadcastingAuthController::class, 'authorize'])
+    ->middleware('auth:api');
 
 // Cek apakah ada view welcome
 Route::get('/', function () {
