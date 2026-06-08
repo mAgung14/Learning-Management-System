@@ -252,20 +252,39 @@ class RombelTest extends TestCase
         ]);
 
         // 3. Buat konten (materi, tugas, diskusi, pengumuman)
-        $materi = \App\Models\Materi::create([
-            'judul' => 'Materi Matematika',
+        // Materi dan tugas spesifik kelas
+        $materiClass = \App\Models\Materi::create([
+            'judul' => 'Materi Matematika Kelas',
             'deskripsi' => 'Pengenalan Aljabar',
             'mapel_id' => $this->mapel->id,
             'rombel_id' => $this->rombelSource->id,
             'guru_id' => $guru->id,
         ]);
 
-        $tugas = \App\Models\Tugas::create([
-            'judul' => 'Tugas Aljabar',
+        $tugasClass = \App\Models\Tugas::create([
+            'judul' => 'Tugas Aljabar Kelas',
             'deskripsi' => 'Kerjakan hal 10',
             'deadline' => now()->addDays(7),
             'mapel_id' => $this->mapel->id,
             'rombel_id' => $this->rombelSource->id,
+            'guru_id' => $guru->id,
+        ]);
+
+        // Materi dan tugas umum mapel (rombel_id = null)
+        $materiGeneral = \App\Models\Materi::create([
+            'judul' => 'Materi Matematika Umum',
+            'deskripsi' => 'Pengenalan Bilangan',
+            'mapel_id' => $this->mapel->id,
+            'rombel_id' => null,
+            'guru_id' => $guru->id,
+        ]);
+
+        $tugasGeneral = \App\Models\Tugas::create([
+            'judul' => 'Tugas Matematika Umum',
+            'deskripsi' => 'Kerjakan hal 5',
+            'deadline' => now()->addDays(7),
+            'mapel_id' => $this->mapel->id,
+            'rombel_id' => null,
             'guru_id' => $guru->id,
         ]);
 
@@ -283,8 +302,10 @@ class RombelTest extends TestCase
         ]);
 
         // Pastikan semua data ada di database sebelum promote
-        $this->assertDatabaseHas('materi', ['id' => $materi->id]);
-        $this->assertDatabaseHas('tugas', ['id' => $tugas->id]);
+        $this->assertDatabaseHas('materi', ['id' => $materiClass->id]);
+        $this->assertDatabaseHas('materi', ['id' => $materiGeneral->id]);
+        $this->assertDatabaseHas('tugas', ['id' => $tugasClass->id]);
+        $this->assertDatabaseHas('tugas', ['id' => $tugasGeneral->id]);
         $this->assertDatabaseHas('diskusis', ['id' => $diskusi->id]);
         $this->assertDatabaseHas('pengumuman', ['id' => $pengumuman->id]);
         $this->assertDatabaseHas('mata_pelajaran', ['id' => $this->mapel->id]);
@@ -303,8 +324,10 @@ class RombelTest extends TestCase
         $response->assertStatus(200);
 
         // 5. Verifikasi bahwa data konten di rombelSource terhapus
-        $this->assertDatabaseMissing('materi', ['id' => $materi->id]);
-        $this->assertDatabaseMissing('tugas', ['id' => $tugas->id]);
+        $this->assertDatabaseMissing('materi', ['id' => $materiClass->id]);
+        $this->assertDatabaseMissing('materi', ['id' => $materiGeneral->id]);
+        $this->assertDatabaseMissing('tugas', ['id' => $tugasClass->id]);
+        $this->assertDatabaseMissing('tugas', ['id' => $tugasGeneral->id]);
         $this->assertDatabaseMissing('diskusis', ['id' => $diskusi->id]);
         $this->assertDatabaseMissing('pengumuman', ['id' => $pengumuman->id]);
 
@@ -344,20 +367,39 @@ class RombelTest extends TestCase
         ]);
 
         // 3. Buat konten (materi, tugas, diskusi, pengumuman)
-        $materi = \App\Models\Materi::create([
-            'judul' => 'Materi Biologi',
+        // Materi dan tugas spesifik kelas
+        $materiClass = \App\Models\Materi::create([
+            'judul' => 'Materi Biologi Kelas',
             'deskripsi' => 'Sel Hewan',
             'mapel_id' => $this->mapel->id,
             'rombel_id' => $this->rombelSource->id,
             'guru_id' => $guru->id,
         ]);
 
-        $tugas = \App\Models\Tugas::create([
-            'judul' => 'Tugas Sel',
+        $tugasClass = \App\Models\Tugas::create([
+            'judul' => 'Tugas Sel Kelas',
             'deskripsi' => 'Gambar sel',
             'deadline' => now()->addDays(7),
             'mapel_id' => $this->mapel->id,
             'rombel_id' => $this->rombelSource->id,
+            'guru_id' => $guru->id,
+        ]);
+
+        // Materi dan tugas umum mapel (rombel_id = null)
+        $materiGeneral = \App\Models\Materi::create([
+            'judul' => 'Materi Biologi Umum',
+            'deskripsi' => 'Ekosistem',
+            'mapel_id' => $this->mapel->id,
+            'rombel_id' => null,
+            'guru_id' => $guru->id,
+        ]);
+
+        $tugasGeneral = \App\Models\Tugas::create([
+            'judul' => 'Tugas Ekosistem',
+            'deskripsi' => 'Gambar rantai makanan',
+            'deadline' => now()->addDays(7),
+            'mapel_id' => $this->mapel->id,
+            'rombel_id' => null,
             'guru_id' => $guru->id,
         ]);
 
@@ -375,8 +417,10 @@ class RombelTest extends TestCase
         ]);
 
         // Pastikan semua data ada di database sebelum graduate
-        $this->assertDatabaseHas('materi', ['id' => $materi->id]);
-        $this->assertDatabaseHas('tugas', ['id' => $tugas->id]);
+        $this->assertDatabaseHas('materi', ['id' => $materiClass->id]);
+        $this->assertDatabaseHas('materi', ['id' => $materiGeneral->id]);
+        $this->assertDatabaseHas('tugas', ['id' => $tugasClass->id]);
+        $this->assertDatabaseHas('tugas', ['id' => $tugasGeneral->id]);
         $this->assertDatabaseHas('diskusis', ['id' => $diskusi->id]);
         $this->assertDatabaseHas('pengumuman', ['id' => $pengumuman->id]);
 
@@ -389,8 +433,10 @@ class RombelTest extends TestCase
         $response->assertStatus(200);
 
         // 5. Verifikasi bahwa data konten terhapus
-        $this->assertDatabaseMissing('materi', ['id' => $materi->id]);
-        $this->assertDatabaseMissing('tugas', ['id' => $tugas->id]);
+        $this->assertDatabaseMissing('materi', ['id' => $materiClass->id]);
+        $this->assertDatabaseMissing('materi', ['id' => $materiGeneral->id]);
+        $this->assertDatabaseMissing('tugas', ['id' => $tugasClass->id]);
+        $this->assertDatabaseMissing('tugas', ['id' => $tugasGeneral->id]);
         $this->assertDatabaseMissing('diskusis', ['id' => $diskusi->id]);
         $this->assertDatabaseMissing('pengumuman', ['id' => $pengumuman->id]);
 

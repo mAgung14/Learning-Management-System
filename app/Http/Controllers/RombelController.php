@@ -343,8 +343,23 @@ class RombelController extends Controller
      */
     private function cleanupRombelContent($rombelId)
     {
-        // 1. Ambil materi dan hapus file fisiknya dari storage
-        $materis = \App\Models\Materi::with('files')->where('rombel_id', $rombelId)->get();
+        // 1. Ambil mapel_ids yang terhubung ke rombel ini via rombel_mapel
+        $mapelIds = \DB::table('rombel_mapel')
+            ->where('rombel_id', $rombelId)
+            ->pluck('mata_pelajaran_id')
+            ->toArray();
+
+        // 2. Ambil materi dan hapus file fisiknya dari storage
+        // Materi bisa berelasi langsung (rombel_id = $rombelId) ATAU lewat mapel (rombel_id IS NULL dan mapel_id in $mapelIds)
+        $materisQuery = \App\Models\Materi::with('files')->where('rombel_id', $rombelId);
+        if (!empty($mapelIds)) {
+            $materisQuery->orWhere(function ($q) use ($mapelIds) {
+                $q->whereNull('rombel_id')
+                  ->whereIn('mapel_id', $mapelIds);
+            });
+        }
+        $materis = $materisQuery->get();
+
         foreach ($materis as $materi) {
             foreach ($materi->files as $file) {
                 if ($file->tipe !== 'YOUTUBE') {
@@ -357,8 +372,17 @@ class RombelController extends Controller
             $materi->delete(); // Ini memicu cascade delete di DB untuk file_material
         }
 
-        // 2. Ambil tugas untuk menghapus file fisik pengumpulan dari storage
-        $tugasList = \App\Models\Tugas::with('pengumpulan')->where('rombel_id', $rombelId)->get();
+        // 3. Ambil tugas untuk menghapus file fisik pengumpulan dari storage
+        // Tugas bisa berelasi langsung (rombel_id = $rombelId) ATAU lewat mapel (rombel_id IS NULL dan mapel_id in $mapelIds)
+        $tugasQuery = \App\Models\Tugas::with('pengumpulan')->where('rombel_id', $rombelId);
+        if (!empty($mapelIds)) {
+            $tugasQuery->orWhere(function ($q) use ($mapelIds) {
+                $q->whereNull('rombel_id')
+                  ->whereIn('mapel_id', $mapelIds);
+            });
+        }
+        $tugasList = $tugasQuery->get();
+
         foreach ($tugasList as $tugas) {
             foreach ($tugas->pengumpulan as $pengumpulan) {
                 if ($pengumpulan->file) {
@@ -370,12 +394,6 @@ class RombelController extends Controller
             }
             $tugas->delete(); // Ini memicu cascade delete di DB untuk pengumpulans, dll.
         }
-
-        // 3. Ambil mapel_ids yang terhubung ke rombel ini via rombel_mapel
-        $mapelIds = \DB::table('rombel_mapel')
-            ->where('rombel_id', $rombelId)
-            ->pluck('mata_pelajaran_id')
-            ->toArray();
 
         if (!empty($mapelIds)) {
             // 4. Hapus diskusi/obrolan yang terhubung ke mapel-mapel tersebut
