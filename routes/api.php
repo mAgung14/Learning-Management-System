@@ -17,13 +17,14 @@ use App\Http\Controllers\JurusanController;
 use App\Http\Controllers\AnggotaKelasController;
 use App\Http\Controllers\RombelController;
 use App\Http\Controllers\GuruMapelController;
-use App\Http\Controllers\PengumumanController;
 use App\Events\ForumMessageSent;
-
-use Illuminate\Support\Facades\Broadcast;
+use App\Http\Controllers\BroadcastingAuthController;
 
 // Broadcasting Auth Route (Private Channels)
-Broadcast::routes(['middleware' => ['auth:api']]);
+// Uses a custom controller instead of Broadcast::routes() to guarantee a valid
+// JSON response is returned, fixing the Echo auth SyntaxError with Reverb.
+Route::post('/broadcasting/auth', [BroadcastingAuthController::class, 'authorize'])->middleware('auth:api');
+
 
 // Cek apakah ada view welcome
 Route::get('/', function () {
