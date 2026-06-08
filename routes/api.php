@@ -22,8 +22,23 @@ use App\Events\ForumMessageSent;
 
 use Illuminate\Support\Facades\Broadcast;
 
-// Broadcasting Auth Route (Private Channels)
-Broadcast::routes(['middleware' => ['auth:api']]);
+// Broadcasting Auth Route (Private Channels) - Custom handler with error debugging
+Route::post('/broadcasting/auth', function (\Illuminate\Http\Request $request) {
+    try {
+        if (!$request->has('channel_name')) {
+            return response()->json(['error' => 'channel_name is required'], 400);
+        }
+        return Broadcast::auth($request);
+    } catch (\Exception $e) {
+        return response()->json([
+            'error' => 'Broadcast Auth Failed',
+            'message' => $e->getMessage(),
+            'file' => $e->getFile(),
+            'line' => $e->getLine(),
+            'trace' => array_slice($e->getTrace(), 0, 5)
+        ], 500);
+    }
+})->middleware(['auth:api']);
 
 // Cek apakah ada view welcome
 Route::get('/', function () {
