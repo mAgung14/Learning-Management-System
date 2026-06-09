@@ -32,6 +32,23 @@
                 }
             }
         },
+        "/test-reverb": {
+            "get": {
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "string",
+                                    "const": "ok"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/test-broadcast": {
             "post": {
                 "responses": {
@@ -918,19 +935,99 @@
             }
         },
         "/broadcasting/auth": {
-            "get": {
-                "operationId": "broadcast.authenticate",
-                "summary": "Authenticate the request for channel access",
+            "post": {
+                "operationId": "broadcastingAuth.authorize",
+                "description": "Replaces Laravel's default Broadcast::routes() endpoint to ensure\na valid JSON response is always returned, which is required by the\nLaravel Echo + Pusher client when connecting to Reverb.",
+                "summary": "Authenticate a user for a private broadcasting channel",
                 "tags": [
-                    "Broadcast"
+                    "BroadcastingAuth"
                 ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "socket_id": {
+                                        "type": "string"
+                                    },
+                                    "channel_name": {
+                                        "type": "string"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
                 "responses": {
+                    "500": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "anyOf": [
+                                        {
+                                            "type": "object",
+                                            "properties": {
+                                                "message": {
+                                                    "type": "string",
+                                                    "const": "Failed to authenticate broadcasting channel."
+                                                }
+                                            },
+                                            "required": [
+                                                "message"
+                                            ]
+                                        },
+                                        {
+                                            "type": "object",
+                                            "properties": {
+                                                "message": {
+                                                    "type": "string",
+                                                    "const": "Broadcasting is not configured properly."
+                                                }
+                                            },
+                                            "required": [
+                                                "message"
+                                            ]
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    },
                     "200": {
                         "description": "",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "type": "object"
+                                    "type": "object",
+                                    "properties": {
+                                        "auth": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "auth"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "const": "socket_id and channel_name are required."
+                                        }
+                                    },
+                                    "required": [
+                                        "message"
+                                    ]
                                 }
                             }
                         }
@@ -4726,6 +4823,92 @@
                     },
                     "404": {
                         "$ref": "#/components/responses/ModelNotFoundException"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            }
+        },
+        "/recap/nilai": {
+            "get": {
+                "operationId": "recap.downloadRecap",
+                "description": "Mengunduh rekapitulasi nilai siswa per rombel/kelas dalam format Excel (.xlsx).\nJika `mapel_id` diberikan, akan mengunduh detail rekap untuk mata pelajaran tersebut saja.\nJika `mapel_id` dikosongkan, akan mengunduh file Excel multi-sheet berisi:\n- Sheet 1: Ringkasan rata-rata semua mata pelajaran untuk kelas tersebut.\n- Sheet berikutnya: Detail tugas untuk masing-masing mata pelajaran.",
+                "summary": "Download Rekap Nilai per Rombel/Kelas",
+                "tags": [
+                    "Recap"
+                ],
+                "parameters": [
+                    {
+                        "name": "rombel_id",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "mapel_id",
+                        "in": "query",
+                        "schema": {
+                            "type": [
+                                "integer",
+                                "null"
+                            ]
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/ModelNotFoundException"
+                    },
+                    "403": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "anyOf": [
+                                        {
+                                            "type": "object",
+                                            "properties": {
+                                                "message": {
+                                                    "type": "string",
+                                                    "const": "Akses ditolak. Anda tidak mengajar di kelas ini."
+                                                }
+                                            },
+                                            "required": [
+                                                "message"
+                                            ]
+                                        },
+                                        {
+                                            "type": "object",
+                                            "properties": {
+                                                "message": {
+                                                    "type": "string",
+                                                    "const": "Akses ditolak. Anda tidak mengajar mata pelajaran ini."
+                                                }
+                                            },
+                                            "required": [
+                                                "message"
+                                            ]
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "$ref": "#/components/responses/ValidationException"
                     },
                     "401": {
                         "$ref": "#/components/responses/AuthenticationException"

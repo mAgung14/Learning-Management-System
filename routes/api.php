@@ -20,13 +20,10 @@ use App\Http\Controllers\GuruMapelController;
 use App\Events\ForumMessageSent;
 use App\Http\Controllers\BroadcastingAuthController;
 use App\Http\Controllers\PengumumanController;
+use App\Http\Controllers\RecapController;
 
-// Broadcasting Auth Route (Private Channels)
-// Uses a custom controller instead of Broadcast::routes() to guarantee a valid
-// JSON response is returned, fixing the Echo auth SyntaxError with Reverb.
 Route::post('/broadcasting/auth', [BroadcastingAuthController::class, 'authorize'])->middleware('auth:api');
 
-// Cek apakah ada view welcome
 Route::get('/', function () {
 
     return view('welcome');
@@ -62,6 +59,8 @@ Route::middleware(['auth:api', 'role:admin'])
 
 Route::get('/jurusan', [DashboardController::class, 'getJurusan']);
 Route::get('/kelas', [DashboardController::class, 'getKelas']);
+
+Route::middleware(['auth:api', 'role:admin,guru'])->get('/recap/nilai', [RecapController::class, 'downloadRecap']);
 
 Route::middleware(['auth:api', 'role:guru'])->group(function () {
     Route::get('/dashboard/guru', [DashboardController::class, 'guruDashboard']);
