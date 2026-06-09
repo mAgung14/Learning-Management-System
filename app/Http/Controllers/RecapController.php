@@ -231,6 +231,12 @@ class RecapController extends Controller
         $sheet->setCellValue($overallAvgCol . '5', 'Rata-rata Kelas');
 
         $lastColChar = $overallAvgCol;
+        
+        // Merge Title Block to prevent column A from expanding
+        $sheet->mergeCells('A1:' . $lastColChar . '1');
+        $sheet->mergeCells('A2:' . $lastColChar . '2');
+        $sheet->mergeCells('A3:' . $lastColChar . '3');
+
         $headerRange = 'A5:' . $lastColChar . '5';
         
         // Header Style (Elegant Blue/Navy)
@@ -321,9 +327,13 @@ class RecapController extends Controller
             ],
         ]);
 
-        // Auto-fit column width
+        // Auto-fit column width (fixed width for 'No' column to look neat)
         for ($col = 'A'; $col !== $this->incrementColumn($lastColChar); $col++) {
-            $sheet->getColumnDimension($col)->setAutoSize(true);
+            if ($col === 'A') {
+                $sheet->getColumnDimension($col)->setAutoSize(false)->setWidth(6);
+            } else {
+                $sheet->getColumnDimension($col)->setAutoSize(true);
+            }
         }
     }
 
@@ -356,6 +366,13 @@ class RecapController extends Controller
         $sheet->setCellValue($averageCol . '6', 'Rata-rata');
 
         $lastColChar = $averageCol;
+        
+        // Merge Title Block to prevent column A from expanding
+        $sheet->mergeCells('A1:' . $lastColChar . '1');
+        $sheet->mergeCells('A2:' . $lastColChar . '2');
+        $sheet->mergeCells('A3:' . $lastColChar . '3');
+        $sheet->mergeCells('A4:' . $lastColChar . '4');
+
         $headerRange = 'A6:' . $lastColChar . '6';
 
         // Header style
@@ -450,9 +467,13 @@ class RecapController extends Controller
             ],
         ]);
 
-        // Auto-fit column width
+        // Auto-fit column width (fixed width for 'No' column to look neat)
         for ($col = 'A'; $col !== $this->incrementColumn($lastColChar); $col++) {
-            $sheet->getColumnDimension($col)->setAutoSize(true);
+            if ($col === 'A') {
+                $sheet->getColumnDimension($col)->setAutoSize(false)->setWidth(6);
+            } else {
+                $sheet->getColumnDimension($col)->setAutoSize(true);
+            }
         }
     }
 
