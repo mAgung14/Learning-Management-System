@@ -167,7 +167,6 @@ classDiagram
         +bigint siswa_id FK
         +string file
         +string link
-        +integer nilai
         +timestamp submitted_at
         +timestamp created_at
         +timestamp updated_at
@@ -246,7 +245,7 @@ classDiagram
     Tugas "1" -- "*" Absensi : "logged via"
     Pengumpulan "1" -- "*" Absensi : "verified by"
 
-    Pengumpulan "1" -- "1" Nilai : "graded in"
+    Pengumpulan "1" -- "0..1" Nilai : "graded in"
     Siswa "1" -- "*" Nilai : "receives"
 
     Tugas "1" -- "*" TugasSusulan : "has updates"
@@ -464,7 +463,6 @@ Tabel untuk menampung jawaban/berkas tugas yang dikumpulkan oleh siswa.
 | **siswa_id** | bigint unsigned | Foreign Key -> `siswa(id)`, On Delete Cascade | Siswa yang mengumpulkan tugas |
 | **file** | varchar(255) | Nullable | Path file jawaban (jika berupa berkas upload) |
 | **link** | varchar(1000)| Nullable | Link eksternal (Google Drive/GitHub dll) |
-| **nilai** | integer | Nullable | Nilai tugas (sementara/disinkronkan ke tabel nilai) |
 | **submitted_at** | timestamp | Nullable | Waktu siswa menekan tombol kumpul |
 | **created_at** | timestamp | Nullable | Catatan waktu pembuatan sistem |
 | **updated_at** | timestamp | Nullable | Catatan waktu pembaruan sistem |

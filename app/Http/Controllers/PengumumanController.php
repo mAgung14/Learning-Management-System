@@ -14,7 +14,7 @@ class PengumumanController extends Controller
     public function index(Request $request)
     {
         $user = auth()->user();
-        $query = Pengumuman::with(['user:id,username,role', 'mapel:id,nama_mapel', 'anggotaKelas.siswa:id,nis,nama', 'anggotaKelas.rombel:id,kelas_id,jurusan_id']);
+        $query = Pengumuman::with(['user:id,username,role', 'mapel:id,nama_mapel']);
 
         if ($request->filled('mapel_id')) {
             $query->where('mapel_id', $request->mapel_id);
@@ -162,7 +162,7 @@ class PengumumanController extends Controller
     public function show($id)
     {
         return response()->json([
-            'data' => Pengumuman::with(['user:id,username,role', 'mapel:id,nama_mapel', 'anggotaKelas.siswa:id,nis,nama', 'anggotaKelas.rombel:id,kelas_id,jurusan_id'])->findOrFail($id),
+            'data' => Pengumuman::with(['user:id,username,role', 'mapel:id,nama_mapel'])->findOrFail($id),
         ]);
     }
 

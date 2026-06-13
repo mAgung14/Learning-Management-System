@@ -89,7 +89,7 @@ class GuruController extends Controller
         $payload = $request->validate([
             'nama' => 'sometimes|string|max:255',
             'nik' => 'sometimes|string|max:255',
-            'jenis_kelamin' => 'sometimes|in:L,P',
+            'jenis_kelamin' => 'sometimes|in:Laki-laki,Perempuan',
         ]);
 
         $guru->update($payload);

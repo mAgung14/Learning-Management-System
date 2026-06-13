@@ -141,7 +141,7 @@ class SiswaController extends Controller
             'nama' => 'sometimes|string|max:255',
             'jurusan_id' => 'sometimes|exists:jurusan,id',
             'rombel_id' => 'sometimes|exists:rombel,id',
-            'jenis_kelamin' => 'sometimes|in:L,P',
+            'jenis_kelamin' => 'sometimes|in:Laki-laki,Perempuan',
         ]);
 
         $updateData = collect($payload)->only(['nis', 'nama', 'jurusan_id', 'jenis_kelamin'])->toArray();
@@ -475,7 +475,7 @@ $siswa = Siswa::where('user_id', $user->id)->with('user:id,username,role')->firs
                 'link' => $pengumpulan->link,
                 'submitted_at' => $pengumpulan->submitted_at,
                 'status' => $pengumpulan->submitted_at ? 'Sudah dikumpulkan' : 'Belum dikumpulkan',
-                'nilai' => $pengumpulan->nilai ?? 'Belum dinilai'
+                'nilai' => $pengumpulan->nilai?->score ?? 'Belum dinilai'
             ] : null
         ];
 

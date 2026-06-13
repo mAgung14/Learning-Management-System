@@ -126,9 +126,9 @@ class UserImportController extends Controller
             } else {
                 $jkLower = strtolower($jkInput);
                 if (in_array($jkLower, ['l', 'laki-laki', 'laki laki', 'laki - laki', 'pria', 'cowok'])) {
-                    $jk = 'L';
+                    $jk = 'Laki-laki';
                 } elseif (in_array($jkLower, ['p', 'perempuan', 'wanita', 'cewek'])) {
-                    $jk = 'P';
+                    $jk = 'Perempuan';
                 } else {
                     $rowErrors[] = "Jenis Kelamin '{$jkInput}' tidak valid. Harus Laki-laki atau Perempuan.";
                 }

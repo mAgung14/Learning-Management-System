@@ -70,7 +70,7 @@ class TugasSusulanController extends Controller
                     'file' => $pengumpulan->file,
                     'link' => $pengumpulan->link,
                     'submitted_at' => $pengumpulan->submitted_at,
-                    'nilai' => $pengumpulan->nilai ?? 'Belum dinilai'
+                    'nilai' => $pengumpulan->nilai?->score ?? 'Belum dinilai'
                 ] : null
             ];
         });
@@ -224,7 +224,7 @@ class TugasSusulanController extends Controller
                     'file' => $pengumpulan->file,
                     'link' => $pengumpulan->link,
                     'submitted_at' => $pengumpulan->submitted_at,
-                    'nilai' => $pengumpulan->nilai ?? 'Belum dinilai'
+                    'nilai' => $pengumpulan->nilai?->score ?? 'Belum dinilai'
                 ] : null
             ];
         });
@@ -292,7 +292,7 @@ class TugasSusulanController extends Controller
                 'file' => $pengumpulan->file,
                 'link' => $pengumpulan->link,
                 'submitted_at' => $pengumpulan->submitted_at,
-                'nilai' => $pengumpulan->nilai ?? 'Belum dinilai'
+                'nilai' => $pengumpulan->nilai?->score ?? 'Belum dinilai'
             ] : null
         ];
 

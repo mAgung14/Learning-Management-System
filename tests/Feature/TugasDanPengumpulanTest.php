@@ -237,6 +237,6 @@ class TugasDanPengumpulanTest extends TestCase
             'score' => 90,
         ]);
 
-        $this->assertEquals(90, $pengumpulan->fresh()->nilai);
+        $this->assertEquals(90, $pengumpulan->fresh()->nilai?->score);
     }
 }

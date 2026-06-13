@@ -185,7 +185,7 @@ class DashboardController extends Controller
             ];
         })->unique('id')->values();
 
-        $pengumuman = Pengumuman::with(['user:id,username,role', 'mapel:id,nama_mapel', 'anggotaKelas.siswa:id,nis,nama'])
+        $pengumuman = Pengumuman::with(['user:id,username,role', 'mapel:id,nama_mapel'])
             ->where(function ($query) use ($siswa, $rombelIds) {
                 $anggotaKelasIds = $siswa->anggotaKelas()->pluck('id')->toArray();
                 $query->whereIn('anggota_kelas_id', $anggotaKelasIds);

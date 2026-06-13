@@ -366,7 +366,7 @@ class TugasController extends Controller
                 'link' => $pengumpulan ? $pengumpulan->link : null,
                 'nama_file' => $pengumpulan && $pengumpulan->file ? basename($pengumpulan->file) : 'Belum ada file',
                 'status' => $isSubmitted ? 'HADIR' : 'ALFA',
-                'nilai' => ($pengumpulan && $pengumpulan->nilai !== null) ? $pengumpulan->nilai : '--',
+                'nilai' => ($pengumpulan && $pengumpulan->nilai !== null) ? $pengumpulan->nilai->score : '--',
                 'pengumpulan_id' => $pengumpulan ? $pengumpulan->id : null,
             ];
         });
@@ -428,9 +428,6 @@ class TugasController extends Controller
                 'score' => $scoreValue,
             ]
         );
-
-        // Update skor ke kolom nilai di tabel pengumpulan sebagai cadangan jika perlu
-        $pengumpulan->update(['nilai' => $scoreValue]);
 
         return response()->json([
             'success' => true,
