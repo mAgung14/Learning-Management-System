@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('nis');
             $table->string('nama');
-            $table->enum('jenis_kelamin', ['Laki-laki', 'Perempuan'])->nullable();
+            $table->enum('jenis_kelamin', ['L', 'P'])->nullable();
             $table->foreignId('user_id')->references('id')->on('users')->onDelete('cascade');
             $table->foreignId('jurusan_id')
             ->nullable()
