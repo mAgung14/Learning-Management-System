@@ -32,7 +32,7 @@ class UserImportController extends Controller
      */
     public function importSiswa(Request $request)
     {
-        // Meningkatkan batas waktu eksekusi agar import data besar tidak timeout (5 menit)
+        // Meningkatkan batas waktu eksekusi agar import data besar tidak timeout (15 menit)
         set_time_limit(900);
 
         $request->validate([
@@ -250,8 +250,8 @@ class UserImportController extends Controller
      */
     public function importGuru(Request $request)
     {
-        // Meningkatkan batas waktu eksekusi agar import data besar tidak timeout (5 menit)
-        set_time_limit(300);
+        // Meningkatkan batas waktu eksekusi agar import data besar tidak timeout (15 menit)
+        set_time_limit(900);
 
         $request->validate([
             'file' => 'required|file|mimes:xlsx,xls,csv|max:10240', // max 10MB
