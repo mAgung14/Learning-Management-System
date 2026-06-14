@@ -27,5 +27,9 @@ class AppServiceProvider extends ServiceProvider
                 SecurityScheme::http('bearer', 'JWT')
             );
         });
+
+        \Illuminate\Support\Facades\Gate::define('viewApiDocs', function ($user = null) {
+            return true;
+        });
     }
 }
