@@ -28,6 +28,19 @@ class Siswa extends Model
         return $this->belongsTo(User::class, 'user_id');
     }
 
+    protected static function booted()
+    {
+        static::deleting(function (Siswa $siswa) {
+            $user = $siswa->user;
+
+            // Hanya hapus akun user jika ini akun siswa murni.
+            // Jangan hapus jika akun tersebut juga terkait sebagai guru.
+            if ($user && $user->role === 'siswa' && !$user->guru) {
+                $user->delete();
+            }
+        });
+    }
+
     public function tugasSusulan()
     {
         return $this->hasMany(TugasSusulan::class, 'siswa_id');

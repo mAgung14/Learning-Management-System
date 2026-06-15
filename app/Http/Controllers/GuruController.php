@@ -130,11 +130,7 @@ class GuruController extends Controller
         $guru = Guru::findOrFail($id);
 
         DB::transaction(function () use ($guru) {
-            if ($guru->user_id) {
-                \App\Models\User::destroy($guru->user_id);
-            } else {
-                $guru->delete();
-            }
+            $guru->delete();
         });
 
         return response()->json([
