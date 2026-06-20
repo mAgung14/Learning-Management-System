@@ -188,7 +188,9 @@ class MataPelajaranController extends Controller
      * - Kolom D: guru_ids (opsional, bisa menggunakan ID guru atau nama guru, dipisah koma jika lebih dari satu)
      *   - Jika menggunakan nama guru, nama harus persis sama dengan yang ada di database.
      *   - Jika ada beberapa guru dengan nama sama, gunakan ID guru untuk menghindari ambigu.
-     * - Kolom E: rombel_ids (opsional, ID rombel dipisah koma jika lebih dari satu)
+     * - Kolom E: rombel_ids (opsional, bisa menggunakan ID rombel atau nama rombel, dipisah koma jika lebih dari satu)
+     *   - Nama rombel dibentuk dari "<tingkat> <nama_jurusan>".
+     *   - Jika nama rombel tidak unik, gunakan ID rombel.
      *
      * Baris pertama harus header dan akan dilewati.
      */
@@ -239,8 +241,15 @@ class MataPelajaranController extends Controller
             $guruNameMap[$nameKey][] = $guru->id;
         }
 
-        $rombelIds = Rombel::pluck('id')->toArray();
-        $rombelIdSet = array_flip($rombelIds);
+        $rombelList = Rombel::with(['kelas:id,tingkat', 'jurusan:id,nama_jurusan'])->get();
+        $rombelIdSet = $rombelList->pluck('id')->flip()->toArray();
+        $rombelNameMap = [];
+        foreach ($rombelList as $rombel) {
+            $rombelName = trim(($rombel->kelas->tingkat ?? '') . ' ' . ($rombel->jurusan->nama_jurusan ?? ''));
+            if ($rombelName !== '') {
+                $rombelNameMap[strtolower($rombelName)][] = $rombel->id;
+            }
+        }
 
         foreach ($rows as $index => $row) {
             $rowNum = $index + 2;
@@ -314,21 +323,34 @@ class MataPelajaranController extends Controller
             $rombelIdsForRow = [];
             if ($rombelInput !== '') {
                 $parsed = preg_split('/[;,]+/', $rombelInput);
-                foreach ($parsed as $rombelId) {
-                    $rombelId = trim($rombelId);
-                    if ($rombelId === '') {
+                foreach ($parsed as $rombelItem) {
+                    $rombelItem = trim($rombelItem);
+                    if ($rombelItem === '') {
                         continue;
                     }
-                    if (!ctype_digit($rombelId)) {
-                        $rowErrors[] = "Format rombel_ids tidak valid pada baris {$rowNum}. Gunakan ID rombel numerik yang dipisah koma.";
+
+                    if (ctype_digit($rombelItem)) {
+                        $rombelIdInt = (int)$rombelItem;
+                        if (!isset($rombelIdSet[$rombelIdInt])) {
+                            $rowErrors[] = "Rombel dengan ID {$rombelIdInt} tidak ditemukan.";
+                        } else {
+                            $rombelIdsForRow[] = $rombelIdInt;
+                        }
                         continue;
                     }
-                    $rombelIdInt = (int)$rombelId;
-                    if (!isset($rombelIdSet[$rombelIdInt])) {
-                        $rowErrors[] = "Rombel dengan ID {$rombelIdInt} tidak ditemukan.";
-                    } else {
-                        $rombelIdsForRow[] = $rombelIdInt;
+
+                    $rombelNameKey = strtolower($rombelItem);
+                    if (!isset($rombelNameMap[$rombelNameKey])) {
+                        $rowErrors[] = "Rombel dengan nama '{$rombelItem}' tidak ditemukan.";
+                        continue;
                     }
+
+                    if (count($rombelNameMap[$rombelNameKey]) > 1) {
+                        $rowErrors[] = "Nama rombel '{$rombelItem}' tidak unik. Gunakan ID rombel yang spesifik.";
+                        continue;
+                    }
+
+                    $rombelIdsForRow[] = $rombelNameMap[$rombelNameKey][0];
                 }
                 $rombelIdsForRow = array_values(array_unique($rombelIdsForRow));
             }
