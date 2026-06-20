@@ -292,8 +292,31 @@ $siswa = Siswa::where('user_id', $user->id)->with('user:id,username,role')->firs
             ])
             ->first();
 
+        // Jika mapel belum terhubung ke rombel tapi ada materi yang bisa diakses siswa,
+        // tetap izinkan menampilkan materi.
         if (!$mapel) {
-            return response()->json(['message' => 'Mata pelajaran tidak ditemukan atau Anda tidak memiliki akses ke mata pelajaran ini.'], 404);
+            $materiForMapel = \App\Models\Materi::where('mapel_id', $id)
+                ->where(function ($q) use ($rombelIds) {
+                    $q->whereNull('rombel_id')
+                        ->orWhereIn('rombel_id', $rombelIds);
+                })
+                ->exists();
+
+            if (!$materiForMapel) {
+                return response()->json(['message' => 'Mata pelajaran tidak ditemukan atau Anda tidak memiliki akses ke mata pelajaran ini.'], 404);
+            }
+
+            $mapel = \App\Models\MataPelajaran::with([
+                'guru' => function ($q) {
+                    $q->select('guru.id', 'nama');
+                },
+                'rombel.kelas',
+                'rombel.jurusan'
+            ])->find($id);
+
+            if (!$mapel) {
+                return response()->json(['message' => 'Mata pelajaran tidak ditemukan.'], 404);
+            }
         }
 
         // Ambil materi untuk mapel ini yang sesuai dengan rombel siswa (atau materi publik untuk semua rombel di mapel ini)
