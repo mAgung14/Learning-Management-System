@@ -102,6 +102,7 @@ Route::middleware(['auth:api', 'role:admin'])->group(function () {
     Route::apiResource('kelas', KelasController::class);
     Route::get('/mata-pelajaran/form-data', [MataPelajaranController::class, 'formData']);
     Route::apiResource('mata-pelajaran', MataPelajaranController::class);
+    Route::post('/mata-pelajaran/import', [MataPelajaranController::class, 'import']);
     Route::apiResource('siswa', SiswaController::class);
     Route::post('/siswa/{id}/reset-password', [SiswaController::class, 'resetPassword']);
     Route::apiResource('guru', GuruController::class);

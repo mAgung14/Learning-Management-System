@@ -10,7 +10,7 @@ Terdapat juga dokumentasi interaktif (OpenAPI/Swagger) yang disediakan oleh pack
 
 ## 1. Otentikasi (Authentication) & Data User (`AuthController`)
 
-| Method | Endpoint | Handler | Middleware / Akses | Deskripsi |
+| Method | Endpoint | Handler | Middleware / Akses | Fungsi |
 | :--- | :--- | :--- | :--- | :--- |
 | **POST** | `/api/login` | `AuthController@login` | Public | Login untuk mendapatkan token JWT (Bearer). |
 | **POST** | `/api/logout` | `AuthController@logout` | `auth:api` | Logout dan menghapus validitas token JWT saat ini. |
@@ -23,7 +23,7 @@ Terdapat juga dokumentasi interaktif (OpenAPI/Swagger) yang disediakan oleh pack
 
 ## 2. Dashboard (`DashboardController`)
 
-| Method | Endpoint | Handler | Middleware / Akses | Deskripsi |
+| Method | Endpoint | Handler | Middleware / Akses | Fungsi |
 | :--- | :--- | :--- | :--- | :--- |
 | **GET** | `/api/dashboard/summary` | `DashboardController@summary` | `auth:api`, `role:admin` | Mengambil ringkasan statistik data untuk dashboard Admin. |
 | **GET** | `/api/dashboard/guru` | `DashboardController@guruDashboard` | `auth:api`, `role:guru` | Mengambil statistik dan jadwal mengajar untuk dashboard Guru. |
@@ -35,7 +35,7 @@ Terdapat juga dokumentasi interaktif (OpenAPI/Swagger) yang disediakan oleh pack
 
 ## 3. Modul Guru (Teacher Management)
 
-| Method | Endpoint | Handler | Middleware / Akses | Deskripsi |
+| Method | Endpoint | Handler | Middleware / Akses | Fungsi |
 | :--- | :--- | :--- | :--- | :--- |
 | **GET** | `/api/guru` | `GuruController@index` | `auth:api`, `role:admin` | Menampilkan seluruh daftar guru. |
 | **POST** | `/api/guru` | `GuruController@store` | `auth:api`, `role:admin` | Membuat data guru baru. |
@@ -57,7 +57,7 @@ Terdapat juga dokumentasi interaktif (OpenAPI/Swagger) yang disediakan oleh pack
 
 ## 4. Modul Siswa (Student Management)
 
-| Method | Endpoint | Handler | Middleware / Akses | Deskripsi |
+| Method | Endpoint | Handler | Middleware / Akses | Fungsi |
 | :--- | :--- | :--- | :--- | :--- |
 | **GET** | `/api/siswa` | `SiswaController@index` | `auth:api`, `role:admin` | Menampilkan seluruh daftar siswa. |
 | **POST** | `/api/siswa` | `SiswaController@store` | `auth:api`, `role:admin` | Membuat data siswa baru. |
@@ -77,7 +77,7 @@ Terdapat juga dokumentasi interaktif (OpenAPI/Swagger) yang disediakan oleh pack
 
 ## 5. Rombongan Belajar (Rombel) & Anggota Kelas
 
-| Method | Endpoint | Handler | Middleware / Akses | Deskripsi |
+| Method | Endpoint | Handler | Middleware / Akses | Fungsi |
 | :--- | :--- | :--- | :--- | :--- |
 | **GET** | `/api/rombel` | `RombelController@index` | `auth:api`, `role:admin` | Menampilkan seluruh daftar rombel (Rombongan Belajar). |
 | **POST** | `/api/rombel` | `RombelController@store` | `auth:api`, `role:admin` | Membuat rombel baru. |
@@ -99,7 +99,7 @@ Terdapat juga dokumentasi interaktif (OpenAPI/Swagger) yang disediakan oleh pack
 
 ## 6. Materi Pembelajaran (`MateriController`)
 
-| Method | Endpoint | Handler | Middleware / Akses | Deskripsi |
+| Method | Endpoint | Handler | Middleware / Akses | Fungsi |
 | :--- | :--- | :--- | :--- | :--- |
 | **GET** | `/api/guru/materi` | `MateriController@index` | `auth:api`, `role:guru` | Menampilkan semua materi pembelajaran milik guru yang login. |
 | **POST** | `/api/guru/materi` | `MateriController@store` | `auth:api`, `role:guru` | Mengunggah materi pembelajaran baru. |
@@ -111,7 +111,7 @@ Terdapat juga dokumentasi interaktif (OpenAPI/Swagger) yang disediakan oleh pack
 
 ## 7. Tugas (Assignments) & Pengumpulan (Submissions)
 
-| Method | Endpoint | Handler | Middleware / Akses | Deskripsi |
+| Method | Endpoint | Handler | Middleware / Akses | Fungsi |
 | :--- | :--- | :--- | :--- | :--- |
 | **GET** | `/api/tugas` | `TugasController@index` | `auth:api`, `role:guru` | Menampilkan seluruh daftar tugas milik guru yang login. |
 | **POST** | `/api/tugas` | `TugasController@store` | `auth:api`, `role:guru` | Membuat tugas baru untuk rombel/mata pelajaran tertentu. |
@@ -138,7 +138,7 @@ Terdapat juga dokumentasi interaktif (OpenAPI/Swagger) yang disediakan oleh pack
 
 ## 8. Master Data Akademik (Kelas, Mapel, Jurusan) - Admin
 
-| Method | Endpoint | Handler | Middleware / Akses | Deskripsi |
+| Method | Endpoint | Handler | Middleware / Akses | Fungsi |
 | :--- | :--- | :--- | :--- | :--- |
 | **GET** | `/api/kelas` | `KelasController@index` | `auth:api`, `role:admin` | Menampilkan seluruh tingkat/tingkatan kelas. |
 | **POST** | `/api/kelas` | `KelasController@store` | `auth:api`, `role:admin` | Membuat tingkat kelas baru. |
@@ -147,6 +147,7 @@ Terdapat juga dokumentasi interaktif (OpenAPI/Swagger) yang disediakan oleh pack
 | **DELETE** | `/api/kelas/{kela}` | `KelasController@destroy` | `auth:api`, `role:admin` | Menghapus tingkat kelas tertentu. |
 | **GET** | `/api/mata-pelajaran` | `MataPelajaranController@index` | `auth:api`, `role:admin` | Menampilkan daftar seluruh mata pelajaran. |
 | **POST** | `/api/mata-pelajaran` | `MataPelajaranController@store` | `auth:api`, `role:admin` | Membuat mata pelajaran baru. |
+| **POST** | `/api/mata-pelajaran/import` | `MataPelajaranController@import` | `auth:api`, `role:admin` | Mengimpor data mata pelajaran secara massal dari file Excel/CSV. |
 | **GET** | `/api/mata-pelajaran/form-data` | `MataPelajaranController@formData` | `auth:api`, `role:admin` | Mengambil data pendukung konfigurasi mata pelajaran. |
 | **GET** | `/api/mata-pelajaran/{mata_pelajaran}` | `MataPelajaranController@show` | `auth:api`, `role:admin` | Menampilkan detail mata pelajaran tertentu. |
 | **PUT/PATCH** | `/api/mata-pelajaran/{mata_pelajaran}` | `MataPelajaranController@update` | `auth:api`, `role:admin` | Memperbarui mata pelajaran tertentu. |
@@ -162,7 +163,7 @@ Terdapat juga dokumentasi interaktif (OpenAPI/Swagger) yang disediakan oleh pack
 
 ## 9. Komunikasi (Forum Diskusi & Pengumuman)
 
-| Method | Endpoint | Handler | Middleware / Akses | Deskripsi |
+| Method | Endpoint | Handler | Middleware / Akses | Fungsi |
 | :--- | :--- | :--- | :--- | :--- |
 | **GET** | `/api/diskusi/{mapel_id}` | `DiskusiController@index` | `auth:api` | Menampilkan riwayat pesan diskusi berdasarkan ID mata pelajaran. |
 | **POST** | `/api/diskusi/{mapel_id}` | `DiskusiController@store` | `auth:api` | Mengirim/memposting pesan baru ke forum diskusi mata pelajaran. |
@@ -177,7 +178,7 @@ Terdapat juga dokumentasi interaktif (OpenAPI/Swagger) yang disediakan oleh pack
 
 ## 10. Utilitas & Broadcaster Internal
 
-| Method | Endpoint | Handler | Middleware / Akses | Deskripsi |
+| Method | Endpoint | Handler | Middleware / Akses | Fungsi |
 | :--- | :--- | :--- | :--- | :--- |
 | **GET** | `/api/users` | `UserController@index` | `auth:api`, `role:admin` | Menampilkan daftar seluruh user account. |
 | **POST** | `/api/users` | `UserController@store` | `auth:api`, `role:admin` | Menambahkan user baru secara administratif. |

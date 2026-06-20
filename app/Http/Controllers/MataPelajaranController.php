@@ -2,9 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Guru;
 use App\Models\Kelas;
 use App\Models\MataPelajaran;
+use App\Models\Rombel;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use PhpOffice\PhpSpreadsheet\IOFactory;
 
 class MataPelajaranController extends Controller
 {
@@ -172,5 +176,205 @@ class MataPelajaranController extends Controller
         return response()->json([
             'message' => 'Mata pelajaran berhasil dihapus'
         ]);
+    }
+
+    /**
+     * Import Mata Pelajaran dari Excel/CSV.
+     *
+     * Format Template Excel (Mulai Kolom A):
+     * - Kolom A: kode_mapel (wajib, unik)
+     * - Kolom B: nama_mapel (wajib)
+     * - Kolom C: deskripsi (opsional)
+     * - Kolom D: guru_ids (opsional, ID guru dipisah koma jika lebih dari satu)
+     * - Kolom E: rombel_ids (opsional, ID rombel dipisah koma jika lebih dari satu)
+     *
+     * Baris pertama harus header dan akan dilewati.
+     */
+    public function import(Request $request)
+    {
+        set_time_limit(900);
+
+        $request->validate([
+            'file' => 'required|file|mimes:xlsx,xls,csv|max:10240',
+        ]);
+
+        $file = $request->file('file');
+
+        try {
+            $spreadsheet = IOFactory::load($file->getRealPath());
+            $worksheet = $spreadsheet->getActiveSheet();
+            $rows = $worksheet->toArray();
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal membaca file Excel/CSV: ' . $e->getMessage(),
+            ], 400);
+        }
+
+        if (count($rows) <= 1) {
+            return response()->json([
+                'success' => false,
+                'message' => 'File Excel kosong atau hanya berisi header.'
+            ], 400);
+        }
+
+        array_shift($rows);
+
+        $errors = [];
+        $validData = [];
+        $seenCodes = [];
+
+        $existingCodes = MataPelajaran::pluck('kode_mapel')->map(function ($value) {
+            return strtolower(trim($value));
+        })->toArray();
+        $existingCodeSet = array_flip($existingCodes);
+
+        $guruIds = Guru::pluck('id')->toArray();
+        $guruIdSet = array_flip($guruIds);
+
+        $rombelIds = Rombel::pluck('id')->toArray();
+        $rombelIdSet = array_flip($rombelIds);
+
+        foreach ($rows as $index => $row) {
+            $rowNum = $index + 2;
+
+            $kodeMapel = isset($row[0]) ? trim((string)$row[0]) : '';
+            $namaMapel = isset($row[1]) ? trim((string)$row[1]) : '';
+            $deskripsi = isset($row[2]) ? trim((string)$row[2]) : '';
+            $guruInput = isset($row[3]) ? trim((string)$row[3]) : '';
+            $rombelInput = isset($row[4]) ? trim((string)$row[4]) : '';
+
+            if ($kodeMapel === '' && $namaMapel === '' && $deskripsi === '' && $guruInput === '' && $rombelInput === '') {
+                continue;
+            }
+
+            $rowErrors = [];
+            $kodeLower = strtolower($kodeMapel);
+
+            if (empty($kodeMapel)) {
+                $rowErrors[] = 'Kode mapel wajib diisi.';
+            } else {
+                if (in_array($kodeLower, $seenCodes)) {
+                    $rowErrors[] = 'Kode mapel ganda dalam file Excel.';
+                } else {
+                    $seenCodes[] = $kodeLower;
+                }
+
+                if (isset($existingCodeSet[$kodeLower])) {
+                    $rowErrors[] = "Kode mapel '{$kodeMapel}' sudah terdaftar di database.";
+                }
+            }
+
+            if (empty($namaMapel)) {
+                $rowErrors[] = 'Nama mapel wajib diisi.';
+            }
+
+            $guruIdsForRow = [];
+            if ($guruInput !== '') {
+                $parsed = preg_split('/[;,]+/', $guruInput);
+                foreach ($parsed as $guruId) {
+                    $guruId = trim($guruId);
+                    if ($guruId === '') {
+                        continue;
+                    }
+                    if (!ctype_digit($guruId)) {
+                        $rowErrors[] = "Format guru_ids tidak valid pada baris {$rowNum}. Gunakan ID guru numerik yang dipisah koma.";
+                        continue;
+                    }
+                    $guruIdInt = (int)$guruId;
+                    if (!isset($guruIdSet[$guruIdInt])) {
+                        $rowErrors[] = "Guru dengan ID {$guruIdInt} tidak ditemukan.";
+                    } else {
+                        $guruIdsForRow[] = $guruIdInt;
+                    }
+                }
+                $guruIdsForRow = array_values(array_unique($guruIdsForRow));
+            }
+
+            $rombelIdsForRow = [];
+            if ($rombelInput !== '') {
+                $parsed = preg_split('/[;,]+/', $rombelInput);
+                foreach ($parsed as $rombelId) {
+                    $rombelId = trim($rombelId);
+                    if ($rombelId === '') {
+                        continue;
+                    }
+                    if (!ctype_digit($rombelId)) {
+                        $rowErrors[] = "Format rombel_ids tidak valid pada baris {$rowNum}. Gunakan ID rombel numerik yang dipisah koma.";
+                        continue;
+                    }
+                    $rombelIdInt = (int)$rombelId;
+                    if (!isset($rombelIdSet[$rombelIdInt])) {
+                        $rowErrors[] = "Rombel dengan ID {$rombelIdInt} tidak ditemukan.";
+                    } else {
+                        $rombelIdsForRow[] = $rombelIdInt;
+                    }
+                }
+                $rombelIdsForRow = array_values(array_unique($rombelIdsForRow));
+            }
+
+            if (!empty($rowErrors)) {
+                $errors[] = [
+                    'baris' => $rowNum,
+                    'kode_mapel' => $kodeMapel ?: '-',
+                    'nama_mapel' => $namaMapel ?: '-',
+                    'errors' => $rowErrors,
+                ];
+                continue;
+            }
+
+            $validData[] = [
+                'nama_mapel' => $namaMapel,
+                'kode_mapel' => $kodeMapel,
+                'deskripsi' => $deskripsi ?: null,
+                'guru_ids' => $guruIdsForRow,
+                'rombel_ids' => $rombelIdsForRow,
+            ];
+        }
+
+        if (!empty($errors)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Proses import dibatalkan karena terdapat data yang tidak valid.',
+                'total_errors' => count($errors),
+                'errors' => $errors,
+            ], 422);
+        }
+
+        DB::beginTransaction();
+
+        try {
+            foreach ($validData as $data) {
+                $mapel = MataPelajaran::create([
+                    'nama_mapel' => $data['nama_mapel'],
+                    'kode_mapel' => $data['kode_mapel'],
+                    'deskripsi' => $data['deskripsi'],
+                ]);
+
+                if (!empty($data['guru_ids'])) {
+                    $mapel->guru()->sync($data['guru_ids']);
+                }
+
+                if (!empty($data['rombel_ids'])) {
+                    $mapel->rombel()->sync($data['rombel_ids']);
+                }
+            }
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Berhasil mengimport ' . count($validData) . ' data mata pelajaran.',
+                'data' => [
+                    'total_imported' => count($validData),
+                ],
+            ], 201);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan sistem saat menyimpan data: ' . $e->getMessage(),
+            ], 500);
+        }
     }
 }
