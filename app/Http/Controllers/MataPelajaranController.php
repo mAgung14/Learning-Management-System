@@ -185,7 +185,9 @@ class MataPelajaranController extends Controller
      * - Kolom A: kode_mapel (wajib, unik)
      * - Kolom B: nama_mapel (wajib)
      * - Kolom C: deskripsi (opsional)
-     * - Kolom D: guru_ids (opsional, ID guru dipisah koma jika lebih dari satu)
+     * - Kolom D: guru_ids (opsional, bisa menggunakan ID guru atau nama guru, dipisah koma jika lebih dari satu)
+     *   - Jika menggunakan nama guru, nama harus persis sama dengan yang ada di database.
+     *   - Jika ada beberapa guru dengan nama sama, gunakan ID guru untuk menghindari ambigu.
      * - Kolom E: rombel_ids (opsional, ID rombel dipisah koma jika lebih dari satu)
      *
      * Baris pertama harus header dan akan dilewati.
@@ -229,8 +231,13 @@ class MataPelajaranController extends Controller
         })->toArray();
         $existingCodeSet = array_flip($existingCodes);
 
-        $guruIds = Guru::pluck('id')->toArray();
-        $guruIdSet = array_flip($guruIds);
+        $guruList = Guru::select('id', 'nama')->get();
+        $guruIdSet = $guruList->pluck('id')->flip()->toArray();
+        $guruNameMap = [];
+        foreach ($guruList as $guru) {
+            $nameKey = strtolower(trim($guru->nama));
+            $guruNameMap[$nameKey][] = $guru->id;
+        }
 
         $rombelIds = Rombel::pluck('id')->toArray();
         $rombelIdSet = array_flip($rombelIds);
@@ -272,21 +279,34 @@ class MataPelajaranController extends Controller
             $guruIdsForRow = [];
             if ($guruInput !== '') {
                 $parsed = preg_split('/[;,]+/', $guruInput);
-                foreach ($parsed as $guruId) {
-                    $guruId = trim($guruId);
-                    if ($guruId === '') {
+                foreach ($parsed as $guruItem) {
+                    $guruItem = trim($guruItem);
+                    if ($guruItem === '') {
                         continue;
                     }
-                    if (!ctype_digit($guruId)) {
-                        $rowErrors[] = "Format guru_ids tidak valid pada baris {$rowNum}. Gunakan ID guru numerik yang dipisah koma.";
+
+                    if (ctype_digit($guruItem)) {
+                        $guruIdInt = (int)$guruItem;
+                        if (!isset($guruIdSet[$guruIdInt])) {
+                            $rowErrors[] = "Guru dengan ID {$guruIdInt} tidak ditemukan.";
+                        } else {
+                            $guruIdsForRow[] = $guruIdInt;
+                        }
                         continue;
                     }
-                    $guruIdInt = (int)$guruId;
-                    if (!isset($guruIdSet[$guruIdInt])) {
-                        $rowErrors[] = "Guru dengan ID {$guruIdInt} tidak ditemukan.";
-                    } else {
-                        $guruIdsForRow[] = $guruIdInt;
+
+                    $guruNameKey = strtolower($guruItem);
+                    if (!isset($guruNameMap[$guruNameKey])) {
+                        $rowErrors[] = "Guru dengan nama '{$guruItem}' tidak ditemukan.";
+                        continue;
                     }
+
+                    if (count($guruNameMap[$guruNameKey]) > 1) {
+                        $rowErrors[] = "Nama guru '{$guruItem}' tidak unik. Gunakan ID guru yang spesifik.";
+                        continue;
+                    }
+
+                    $guruIdsForRow[] = $guruNameMap[$guruNameKey][0];
                 }
                 $guruIdsForRow = array_values(array_unique($guruIdsForRow));
             }
