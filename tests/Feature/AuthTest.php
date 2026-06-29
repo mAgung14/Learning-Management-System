@@ -295,4 +295,29 @@ class AuthTest extends TestCase
         // Check password changed
         $this->assertTrue(\Hash::check('12345678', $siswaUser->fresh()->password));
     }
+
+    public function test_login_sets_cookie()
+    {
+        $response = $this->postJson('/api/login', [
+            'username' => 'admin_test',
+            'password' => 'password123',
+        ]);
+
+        $response->assertStatus(200);
+        $response->assertCookie('token');
+    }
+
+    public function test_authentication_via_cookie()
+    {
+        $token = \Tymon\JWTAuth\Facades\JWTAuth::fromUser($this->admin);
+
+        // Access /api/me without Authorization header, but with cookie 'token'
+        $response = $this->withHeader('Cookie', 'token=' . $token)
+            ->getJson('/api/me');
+
+        $response->assertStatus(200);
+        $response->assertJsonPath('success', true);
+        $response->assertJsonPath('data.username', 'admin_test');
+    }
 }
+

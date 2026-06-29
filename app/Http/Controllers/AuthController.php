@@ -116,7 +116,7 @@ class AuthController extends Controller
                     'token_type' => 'Bearer',
                     'expires_in' => config('jwt.ttl') * 60,
                 ],
-            ], 201);
+            ], 201)->withCookie($this->setTokenCookie($token));
 
         } catch (\Exception $e) {
 
@@ -171,7 +171,7 @@ class AuthController extends Controller
                     'token_type' => 'Bearer',
                     'expires_in' => config('jwt.ttl') * 60,
                 ],
-            ], 200);
+            ], 200)->withCookie($this->setTokenCookie($token));
         } catch (ValidationException $e) {
             return response()->json([
                 'success' => false,
@@ -217,10 +217,15 @@ class AuthController extends Controller
                     'updated_at' => $user->updated_at,
                 ],
             ], 200);
+        } catch (\Tymon\JWTAuth\Exceptions\TokenNotProvidedException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Akses ditolak, response error unauthorized',
+            ], 401);
         } catch (JWTException $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Token tidak valid',
+                'message' => 'Akses ditolak, response error unauthorized',
             ], 401);
         } catch (\Exception $e) {
             return response()->json([
@@ -241,7 +246,7 @@ class AuthController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => 'Logout berhasil',
-            ], 200);
+            ], 200)->withoutCookie('token');
         } catch (JWTException $e) {
             return response()->json([
                 'success' => false,
@@ -271,7 +276,7 @@ class AuthController extends Controller
                     'token_type' => 'Bearer',
                     'expires_in' => config('jwt.ttl') * 60,
                 ],
-            ], 200);
+            ], 200)->withCookie($this->setTokenCookie($token));
         } catch (JWTException $e) {
             return response()->json([
                 'success' => false,
@@ -283,5 +288,26 @@ class AuthController extends Controller
                 'message' => 'Refresh token gagal: ' . $e->getMessage(),
             ], 500);
         }
+    }
+
+    /**
+     * Create an HttpOnly cookie containing the JWT token.
+     *
+     * @param string $token
+     * @return \Symfony\Component\HttpFoundation\Cookie
+     */
+    private function setTokenCookie($token)
+    {
+        return cookie(
+            'token',
+            $token,
+            config('jwt.ttl'),
+            '/',
+            null,
+            config('session.secure', false),
+            true, // httpOnly
+            false, // raw
+            'Lax' // samesite
+        );
     }
 }

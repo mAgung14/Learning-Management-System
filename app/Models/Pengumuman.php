@@ -16,7 +16,6 @@ class Pengumuman extends Model
         'deskripsi',
         'user_id',
         'mapel_id',
-        'anggota_kelas_id',
     ];
 
     public function user()
@@ -29,8 +28,4 @@ class Pengumuman extends Model
         return $this->belongsTo(MataPelajaran::class, 'mapel_id');
     }
 
-    public function anggotaKelas()
-    {
-        return $this->belongsTo(AnggotaKelas::class, 'anggota_kelas_id');
-    }
 }

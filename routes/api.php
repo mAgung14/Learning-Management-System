@@ -45,8 +45,10 @@ Route::get('/test-reverb', function () {
 Route::withoutMiddleware('web')->group(function () {
     Route::post('/login', [AuthController::class, 'login']);
 
+    // /me dipisah dari middleware group agar bisa return 401 JSON sendiri tanpa exception
+    Route::get('/me', [AuthController::class, 'me']);
+
     Route::middleware(['auth:api'])->group(function () {
-        Route::get('/me', [AuthController::class, 'me']);
         Route::post('/logout', [AuthController::class, 'logout']);
         Route::post('/refresh', [AuthController::class, 'refresh']);
     });
@@ -62,6 +64,9 @@ Route::get('/kelas', [DashboardController::class, 'getKelas']);
 
 Route::middleware(['auth:api', 'role:admin,guru'])->get('/recap/nilai', [RecapController::class, 'downloadRecap']);
 
+// Anggota Kelas — bisa diakses guru & admin
+Route::middleware(['auth:api', 'role:admin,guru'])->get('/anggota-kelas', [AnggotaKelasController::class, 'index']);
+
 Route::middleware(['auth:api', 'role:guru'])->group(function () {
     Route::get('/dashboard/guru', [DashboardController::class, 'guruDashboard']);
     Route::get('/guru/mata-pelajaran', [GuruController::class, 'mataPelajaran']);
@@ -76,7 +81,6 @@ Route::middleware(['auth:api', 'role:guru'])->group(function () {
     Route::post('pengumpulan/{pengumpulanId}/nilai', [TugasController::class, 'berikanNilai']);
     Route::apiResource('tugas-susulan', \App\Http\Controllers\TugasSusulanController::class)->only(['index', 'store', 'destroy']);
     Route::apiResource('tugas', TugasController::class);
-    Route::get('anggota-kelas', [AnggotaKelasController::class, 'index']);
 
 });
 
@@ -120,8 +124,7 @@ Route::middleware(['auth:api', 'role:admin'])->group(function () {
     Route::post('/rombel/graduate', [RombelController::class, 'graduate']);
     Route::get('/mapel/filter', [MataPelajaranController::class, 'filterMapel']);
 
-    // Anggota Kelas — ringkasan & assign manual
-    Route::get('/anggota-kelas', [AnggotaKelasController::class, 'index']);
+    // Anggota Kelas — assign manual & hapus (admin only)
     Route::post('/anggota-kelas', [AnggotaKelasController::class, 'store']);
     Route::delete('/anggota-kelas/{id}', [AnggotaKelasController::class, 'destroy']);
 
