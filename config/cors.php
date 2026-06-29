@@ -15,11 +15,11 @@ return [
     |
     */
 
-    'paths' => ['api/*', 'broadcasting/*', 'sanctum/csrf-cookie'],
+    'paths' => ['api/*', 'sanctum/csrf-cookie', 'broadcasting/auth'],
 
     'allowed_methods' => ['*'],
 
-    'allowed_origins' => explode(',', env('FRONTEND_URL', 'http://localhost:5173')),
+    'allowed_origins' => explode(',', env('FRONTEND_URL', 'http://localhost:5173,https://lms-kp-frontend.vercel.app')),
 
     'allowed_origins_patterns' => [],
 

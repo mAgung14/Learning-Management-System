@@ -304,10 +304,10 @@ class AuthController extends Controller
             config('jwt.ttl'),
             '/',
             null,
-            config('session.secure', false),
+            env('JWT_COOKIE_SECURE', false),
             true, // httpOnly
             false, // raw
-            'Lax' // samesite
+            env('JWT_COOKIE_SAMESITE', 'Lax') // samesite
         );
     }
 }
