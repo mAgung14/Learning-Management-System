@@ -85,6 +85,7 @@ class PengumumanController extends Controller
             'judul' => 'required|string|max:255',
             'deskripsi' => 'required|string',
             'mapel_id' => 'sometimes|nullable|exists:mata_pelajaran,id',
+            'anggota_kelas_id' => 'sometimes|nullable|exists:anggota_kelas,id',
         ]);
 
         if (!$user->guru) {
@@ -146,6 +147,7 @@ class PengumumanController extends Controller
             'deskripsi' => $payload['deskripsi'],
             'user_id' => $user->id,
             'mapel_id' => $payload['mapel_id'] ?? null,
+            'anggota_kelas_id' => $payload['anggota_kelas_id'] ?? null,
         ]);
 
         PengumumanCreated::dispatch($pengumuman);
@@ -188,6 +190,7 @@ class PengumumanController extends Controller
             'judul' => 'sometimes|string|max:255',
             'deskripsi' => 'sometimes|string',
             'mapel_id' => 'sometimes|nullable|exists:mata_pelajaran,id',
+            'anggota_kelas_id' => 'sometimes|nullable|exists:anggota_kelas,id',
         ]);
 
         if (!$user->guru) {
