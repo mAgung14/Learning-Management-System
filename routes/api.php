@@ -17,6 +17,7 @@ use App\Http\Controllers\JurusanController;
 use App\Http\Controllers\AnggotaKelasController;
 use App\Http\Controllers\RombelController;
 use App\Http\Controllers\GuruMapelController;
+use App\Http\Controllers\RppController;
 use App\Events\ForumMessageSent;
 use App\Http\Controllers\BroadcastingAuthController;
 use App\Http\Controllers\PengumumanController;
@@ -81,6 +82,7 @@ Route::middleware(['auth:api', 'role:guru'])->group(function () {
     Route::post('pengumpulan/{pengumpulanId}/nilai', [TugasController::class, 'berikanNilai']);
     Route::apiResource('tugas-susulan', \App\Http\Controllers\TugasSusulanController::class)->only(['index', 'store', 'destroy']);
     Route::apiResource('tugas', TugasController::class);
+    Route::apiResource('rpp', RppController::class);
 
 });
 
@@ -137,6 +139,7 @@ Route::middleware(['auth:api', 'role:admin'])->group(function () {
     Route::post('/guru/{id}/assign-mapel', [GuruMapelController::class, 'assignMapel']);
     Route::get('/{id}/mapel', [GuruMapelController::class, 'getMapel']);
     Route::delete('/guru/{id}/mapel/{mapel_id}', [GuruMapelController::class, 'removeMapel']);
+    Route::apiResource('rpp', RppController::class)->only(['index', 'show', 'destroy']);
 });
 
 Route::middleware(['auth:api'])->group(function () {
