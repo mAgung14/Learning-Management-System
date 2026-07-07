@@ -14,7 +14,7 @@ class RppController extends Controller
     {
         $user = auth()->user();
         
-        $query = Rpp::with(['mapel', 'guru', 'rombel', 'files', 'pertemuans']);
+        $query = Rpp::with(['mapel', 'guru', 'rombel', 'files']);
 
         // Jika user adalah guru, hanya tampilkan RPP milik dia
         if ($user && $user->role === 'guru') {
@@ -94,7 +94,7 @@ class RppController extends Controller
             ]);
         }
 
-        $rpp->load(['files', 'pertemuans']);
+        $rpp->load(['files']);
 
         return response()->json([
             'success' => true,
@@ -105,7 +105,7 @@ class RppController extends Controller
 
     public function show($id)
     {
-        $rpp = Rpp::with(['mapel', 'guru', 'rombel', 'files', 'pertemuans'])->findOrFail($id);
+        $rpp = Rpp::with(['mapel', 'guru', 'rombel', 'files'])->findOrFail($id);
         
         $user = auth()->user();
         if ($user && $user->role === 'guru' && $rpp->guru_id !== $user->guru->id) {
@@ -175,7 +175,7 @@ class RppController extends Controller
             }
         }
 
-        $rpp->load(['files', 'pertemuans']);
+        $rpp->load(['files']);
 
         return response()->json([
             'success' => true,
