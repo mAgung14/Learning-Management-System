@@ -15,10 +15,7 @@ class UpdateRppRequest extends FormRequest
     {
         return [
             'judul' => 'nullable|string',
-            'deskripsi' => 'nullable|string',
-            'kompetensi_dasar' => 'nullable|string',
-            'indikator' => 'nullable|string',
-            'tujuan_pembelajaran' => 'nullable|string',
+            'judul' => 'nullable|string',
             'mapel_id' => 'sometimes|exists:mata_pelajaran,id',
             'mapelId' => 'sometimes|exists:mata_pelajaran,id',
             'rombel_id' => 'sometimes|exists:rombel,id',

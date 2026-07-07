@@ -15,10 +15,7 @@ class StoreRppRequest extends FormRequest
     {
         return [
             'judul' => 'nullable|string',
-            'deskripsi' => 'nullable|string',
-            'kompetensi_dasar' => 'nullable|string',
-            'indikator' => 'nullable|string',
-            'tujuan_pembelajaran' => 'nullable|string',
+            'judul' => 'nullable|string',
             'mapel_id' => 'required_without:mapelId|exists:mata_pelajaran,id',
             'mapelId' => 'required_without:mapel_id|exists:mata_pelajaran,id',
             'rombel_id' => 'required_without:rombelId|exists:rombel,id',
