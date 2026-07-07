@@ -56,14 +56,24 @@ class RppController extends Controller
             ], 400);
         }
 
+        $mapel_id = $payload['mapel_id'] ?? $payload['mapelId'] ?? null;
+        $rombel_id = $payload['rombel_id'] ?? $payload['rombelId'] ?? null;
+        
+        $status = $payload['status'] ?? 'draft';
+        if (isset($payload['is_published']) && filter_var($payload['is_published'], FILTER_VALIDATE_BOOLEAN)) {
+            $status = 'approved';
+        }
+
         $rpp = Rpp::create([
             'guru_id' => $guru_id,
-            'mapel_id' => $payload['mapel_id'],
-            'rombel_id' => $payload['rombel_id'],
+            'mapel_id' => $mapel_id,
+            'rombel_id' => $rombel_id,
+            'judul' => $payload['judul'] ?? null,
+            'deskripsi' => $payload['deskripsi'] ?? null,
             'kompetensi_dasar' => $payload['kompetensi_dasar'] ?? null,
             'indikator' => $payload['indikator'] ?? null,
             'tujuan_pembelajaran' => $payload['tujuan_pembelajaran'] ?? null,
-            'status' => $payload['status'] ?? 'draft',
+            'status' => $status,
         ]);
 
         // Process pertemuans
@@ -147,12 +157,22 @@ class RppController extends Controller
         $payload = $request->validated();
         
         $data = [];
+        if (array_key_exists('judul', $payload)) $data['judul'] = $payload['judul'];
+        if (array_key_exists('deskripsi', $payload)) $data['deskripsi'] = $payload['deskripsi'];
         if (array_key_exists('kompetensi_dasar', $payload)) $data['kompetensi_dasar'] = $payload['kompetensi_dasar'];
         if (array_key_exists('indikator', $payload)) $data['indikator'] = $payload['indikator'];
         if (array_key_exists('tujuan_pembelajaran', $payload)) $data['tujuan_pembelajaran'] = $payload['tujuan_pembelajaran'];
         if (isset($payload['mapel_id'])) $data['mapel_id'] = $payload['mapel_id'];
+        elseif (isset($payload['mapelId'])) $data['mapel_id'] = $payload['mapelId'];
+        
         if (isset($payload['rombel_id'])) $data['rombel_id'] = $payload['rombel_id'];
-        if (isset($payload['status'])) $data['status'] = $payload['status'];
+        elseif (isset($payload['rombelId'])) $data['rombel_id'] = $payload['rombelId'];
+        
+        if (isset($payload['status'])) {
+            $data['status'] = $payload['status'];
+        } elseif (isset($payload['is_published'])) {
+            $data['status'] = filter_var($payload['is_published'], FILTER_VALIDATE_BOOLEAN) ? 'approved' : 'draft';
+        }
 
         $rpp->update($data);
 

@@ -14,11 +14,16 @@ class StoreRppRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'judul' => 'nullable|string',
+            'deskripsi' => 'nullable|string',
             'kompetensi_dasar' => 'nullable|string',
             'indikator' => 'nullable|string',
             'tujuan_pembelajaran' => 'nullable|string',
-            'mapel_id' => 'required|exists:mata_pelajaran,id',
-            'rombel_id' => 'required|exists:rombel,id',
+            'mapel_id' => 'required_without:mapelId|exists:mata_pelajaran,id',
+            'mapelId' => 'required_without:mapel_id|exists:mata_pelajaran,id',
+            'rombel_id' => 'required_without:rombelId|exists:rombel,id',
+            'rombelId' => 'required_without:rombel_id|exists:rombel,id',
+            'is_published' => 'sometimes|boolean',
             'status' => 'sometimes|in:draft,submitted,approved',
             'pertemuans' => 'sometimes|json',
             'files' => 'sometimes|array',

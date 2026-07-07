@@ -10,6 +10,8 @@ class Rpp extends Model
         'guru_id',
         'mapel_id',
         'rombel_id',
+        'judul',
+        'deskripsi',
         'kompetensi_dasar',
         'indikator',
         'tujuan_pembelajaran',
