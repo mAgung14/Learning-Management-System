@@ -69,8 +69,10 @@ Route::middleware(['auth:api', 'role:admin,guru'])->get('/recap/nilai', [RecapCo
 Route::middleware(['auth:api', 'role:admin,guru'])->get('/anggota-kelas', [AnggotaKelasController::class, 'index']);
 
 Route::middleware(['auth:api', 'role:admin,guru'])->group(function () {
+    Route::get('/mata-pelajaran/form-data', [MataPelajaranController::class, 'formData']);
     Route::get('/mata-pelajaran', [MataPelajaranController::class, 'index']);
     Route::get('/mata-pelajaran/{mata_pelajaran}', [MataPelajaranController::class, 'show'])->where('mata_pelajaran', '[0-9]+');
+    Route::get('/rombel/form-data', [RombelController::class, 'formData']);
     Route::get('/rombel', [RombelController::class, 'index']);
     Route::get('/rombel/{rombel}', [RombelController::class, 'show'])->where('rombel', '[0-9]+');
 });
@@ -113,7 +115,6 @@ Route::middleware(['auth:api', 'role:admin'])->group(function () {
     Route::post('/siswa/import', [\App\Http\Controllers\UserImportController::class, 'importSiswa']);
     Route::post('/guru/import', [\App\Http\Controllers\UserImportController::class, 'importGuru']);
     Route::apiResource('kelas', KelasController::class);
-    Route::get('/mata-pelajaran/form-data', [MataPelajaranController::class, 'formData']);
     Route::apiResource('mata-pelajaran', MataPelajaranController::class)->except(['index', 'show']);
     Route::post('/mata-pelajaran/import', [MataPelajaranController::class, 'import']);
     Route::apiResource('siswa', SiswaController::class);
@@ -123,7 +124,6 @@ Route::middleware(['auth:api', 'role:admin'])->group(function () {
     Route::apiResource('users', UserController::class)->only(['index', 'store']);
     Route::apiResource('jurusan', JurusanController::class);
     // Rombel — CRUD + assign siswa + kick siswa + assign mapel
-    Route::get('/rombel/form-data', [RombelController::class, 'formData']); // ← harus sebelum apiResource
     Route::apiResource('rombel', RombelController::class)->except(['index', 'show']);
     Route::post('/rombel/{id}/assign', [RombelController::class, 'assign']);
     Route::delete('/rombel/{id}/kick/{siswa_id}', [RombelController::class, 'kick']);
