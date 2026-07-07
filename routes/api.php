@@ -75,6 +75,8 @@ Route::middleware(['auth:api', 'role:admin,guru'])->group(function () {
     Route::get('/rombel/form-data', [RombelController::class, 'formData']);
     Route::get('/rombel', [RombelController::class, 'index']);
     Route::get('/rombel/{rombel}', [RombelController::class, 'show'])->where('rombel', '[0-9]+');
+    
+    Route::apiResource('rpp', RppController::class);
 });
 
 Route::middleware(['auth:api', 'role:guru'])->group(function () {
@@ -91,7 +93,6 @@ Route::middleware(['auth:api', 'role:guru'])->group(function () {
     Route::post('pengumpulan/{pengumpulanId}/nilai', [TugasController::class, 'berikanNilai']);
     Route::apiResource('tugas-susulan', \App\Http\Controllers\TugasSusulanController::class)->only(['index', 'store', 'destroy']);
     Route::apiResource('tugas', TugasController::class);
-    Route::apiResource('rpp', RppController::class);
 
 });
 
@@ -146,7 +147,6 @@ Route::middleware(['auth:api', 'role:admin'])->group(function () {
     Route::post('/guru/{id}/assign-mapel', [GuruMapelController::class, 'assignMapel']);
     Route::get('/{id}/mapel', [GuruMapelController::class, 'getMapel']);
     Route::delete('/guru/{id}/mapel/{mapel_id}', [GuruMapelController::class, 'removeMapel']);
-    Route::apiResource('rpp', RppController::class)->only(['index', 'show', 'destroy']);
     Route::patch('rpp/{id}/status', [RppController::class, 'updateStatus']);
 });
 
