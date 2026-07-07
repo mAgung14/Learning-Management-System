@@ -68,6 +68,13 @@ Route::middleware(['auth:api', 'role:admin,guru'])->get('/recap/nilai', [RecapCo
 // Anggota Kelas — bisa diakses guru & admin
 Route::middleware(['auth:api', 'role:admin,guru'])->get('/anggota-kelas', [AnggotaKelasController::class, 'index']);
 
+Route::middleware(['auth:api', 'role:admin,guru'])->group(function () {
+    Route::get('/mata-pelajaran', [MataPelajaranController::class, 'index']);
+    Route::get('/mata-pelajaran/{mata_pelajaran}', [MataPelajaranController::class, 'show'])->where('mata_pelajaran', '[0-9]+');
+    Route::get('/rombel', [RombelController::class, 'index']);
+    Route::get('/rombel/{rombel}', [RombelController::class, 'show'])->where('rombel', '[0-9]+');
+});
+
 Route::middleware(['auth:api', 'role:guru'])->group(function () {
     Route::get('/dashboard/guru', [DashboardController::class, 'guruDashboard']);
     Route::get('/guru/mata-pelajaran', [GuruController::class, 'mataPelajaran']);
@@ -107,7 +114,7 @@ Route::middleware(['auth:api', 'role:admin'])->group(function () {
     Route::post('/guru/import', [\App\Http\Controllers\UserImportController::class, 'importGuru']);
     Route::apiResource('kelas', KelasController::class);
     Route::get('/mata-pelajaran/form-data', [MataPelajaranController::class, 'formData']);
-    Route::apiResource('mata-pelajaran', MataPelajaranController::class);
+    Route::apiResource('mata-pelajaran', MataPelajaranController::class)->except(['index', 'show']);
     Route::post('/mata-pelajaran/import', [MataPelajaranController::class, 'import']);
     Route::apiResource('siswa', SiswaController::class);
     Route::post('/siswa/{id}/reset-password', [SiswaController::class, 'resetPassword']);
@@ -117,7 +124,7 @@ Route::middleware(['auth:api', 'role:admin'])->group(function () {
     Route::apiResource('jurusan', JurusanController::class);
     // Rombel — CRUD + assign siswa + kick siswa + assign mapel
     Route::get('/rombel/form-data', [RombelController::class, 'formData']); // ← harus sebelum apiResource
-    Route::apiResource('rombel', RombelController::class);
+    Route::apiResource('rombel', RombelController::class)->except(['index', 'show']);
     Route::post('/rombel/{id}/assign', [RombelController::class, 'assign']);
     Route::delete('/rombel/{id}/kick/{siswa_id}', [RombelController::class, 'kick']);
     Route::post('/rombel/{id}/assign-mapel', [RombelController::class, 'assignMapel']);
@@ -140,6 +147,7 @@ Route::middleware(['auth:api', 'role:admin'])->group(function () {
     Route::get('/{id}/mapel', [GuruMapelController::class, 'getMapel']);
     Route::delete('/guru/{id}/mapel/{mapel_id}', [GuruMapelController::class, 'removeMapel']);
     Route::apiResource('rpp', RppController::class)->only(['index', 'show', 'destroy']);
+    Route::patch('rpp/{id}/status', [RppController::class, 'updateStatus']);
 });
 
 Route::middleware(['auth:api'])->group(function () {

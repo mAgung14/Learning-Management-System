@@ -9,8 +9,11 @@ class Rpp extends Model
     protected $fillable = [
         'guru_id',
         'mapel_id',
-        'judul',
-        'deskripsi',
+        'rombel_id',
+        'kompetensi_dasar',
+        'indikator',
+        'tujuan_pembelajaran',
+        'status',
     ];
 
     public function guru()
@@ -23,8 +26,18 @@ class Rpp extends Model
         return $this->belongsTo(MataPelajaran::class, 'mapel_id');
     }
 
+    public function rombel()
+    {
+        return $this->belongsTo(Rombel::class, 'rombel_id');
+    }
+
     public function files()
     {
         return $this->hasMany(RppFile::class);
+    }
+
+    public function pertemuans()
+    {
+        return $this->hasMany(RppPertemuan::class, 'rpp_id');
     }
 }

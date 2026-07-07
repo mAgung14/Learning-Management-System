@@ -12,8 +12,11 @@ return new class extends Migration
             $table->id();
             $table->foreignId('guru_id')->constrained('guru')->cascadeOnDelete();
             $table->foreignId('mapel_id')->constrained('mata_pelajaran')->cascadeOnDelete();
-            $table->string('judul');
-            $table->text('deskripsi')->nullable();
+            $table->foreignId('rombel_id')->nullable()->constrained('rombel')->cascadeOnDelete();
+            $table->text('kompetensi_dasar')->nullable();
+            $table->text('indikator')->nullable();
+            $table->text('tujuan_pembelajaran')->nullable();
+            $table->enum('status', ['draft', 'submitted', 'approved'])->default('draft');
             $table->timestamps();
         });
     }

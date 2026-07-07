@@ -14,9 +14,13 @@ class UpdateRppRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'judul' => 'sometimes|string|max:255',
-            'deskripsi' => 'nullable|string',
+            'kompetensi_dasar' => 'nullable|string',
+            'indikator' => 'nullable|string',
+            'tujuan_pembelajaran' => 'nullable|string',
             'mapel_id' => 'sometimes|exists:mata_pelajaran,id',
+            'rombel_id' => 'sometimes|exists:rombel,id',
+            'status' => 'sometimes|in:draft,submitted,approved',
+            'pertemuans' => 'sometimes|json',
             'files' => 'sometimes|array',
             'files.*' => 'file|mimes:pdf,doc,docx,xls,xlsx,ppt,pptx,zip,rar|max:20480',
         ];

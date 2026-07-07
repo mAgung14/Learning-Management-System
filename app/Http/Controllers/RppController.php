@@ -14,7 +14,7 @@ class RppController extends Controller
     {
         $user = auth()->user();
         
-        $query = Rpp::with(['mapel', 'guru', 'files']);
+        $query = Rpp::with(['mapel', 'guru', 'rombel', 'files', 'pertemuans']);
 
         // Jika user adalah guru, hanya tampilkan RPP milik dia
         if ($user && $user->role === 'guru') {
@@ -24,6 +24,11 @@ class RppController extends Controller
         // Filter by mapel_id jika ada
         if ($request->has('mapel_id')) {
             $query->where('mapel_id', $request->mapel_id);
+        }
+
+        // Filter by rombel_id jika ada
+        if ($request->has('rombel_id')) {
+            $query->where('rombel_id', $request->rombel_id);
         }
 
         $rpps = $query->latest()->get();
@@ -54,9 +59,29 @@ class RppController extends Controller
         $rpp = Rpp::create([
             'guru_id' => $guru_id,
             'mapel_id' => $payload['mapel_id'],
-            'judul' => $payload['judul'],
-            'deskripsi' => $payload['deskripsi'] ?? null,
+            'rombel_id' => $payload['rombel_id'],
+            'kompetensi_dasar' => $payload['kompetensi_dasar'] ?? null,
+            'indikator' => $payload['indikator'] ?? null,
+            'tujuan_pembelajaran' => $payload['tujuan_pembelajaran'] ?? null,
+            'status' => $payload['status'] ?? 'draft',
         ]);
+
+        // Process pertemuans
+        if (isset($payload['pertemuans'])) {
+            $pertemuans = json_decode($payload['pertemuans'], true);
+            if (is_array($pertemuans)) {
+                foreach ($pertemuans as $p) {
+                    $rpp->pertemuans()->create([
+                        'pertemuan_ke' => $p['pertemuan_ke'] ?? null,
+                        'topik' => $p['topik'] ?? null,
+                        'kegiatan_pendahuluan' => $p['kegiatan_pendahuluan'] ?? null,
+                        'kegiatan_inti' => $p['kegiatan_inti'] ?? null,
+                        'kegiatan_penutup' => $p['kegiatan_penutup'] ?? null,
+                        'alokasi_waktu' => $p['alokasi_waktu'] ?? null,
+                    ]);
+                }
+            }
+        }
 
         $allFiles = $request->file('files') ?? [];
         if (!is_array($allFiles)) {
@@ -80,7 +105,7 @@ class RppController extends Controller
             ]);
         }
 
-        $rpp->load('files');
+        $rpp->load(['files', 'pertemuans']);
 
         return response()->json([
             'success' => true,
@@ -91,7 +116,7 @@ class RppController extends Controller
 
     public function show($id)
     {
-        $rpp = Rpp::with(['mapel', 'guru', 'files'])->findOrFail($id);
+        $rpp = Rpp::with(['mapel', 'guru', 'rombel', 'files', 'pertemuans'])->findOrFail($id);
         
         $user = auth()->user();
         if ($user && $user->role === 'guru' && $rpp->guru_id !== $user->guru->id) {
@@ -122,11 +147,33 @@ class RppController extends Controller
         $payload = $request->validated();
         
         $data = [];
-        if (isset($payload['judul'])) $data['judul'] = $payload['judul'];
-        if (array_key_exists('deskripsi', $payload)) $data['deskripsi'] = $payload['deskripsi'];
+        if (array_key_exists('kompetensi_dasar', $payload)) $data['kompetensi_dasar'] = $payload['kompetensi_dasar'];
+        if (array_key_exists('indikator', $payload)) $data['indikator'] = $payload['indikator'];
+        if (array_key_exists('tujuan_pembelajaran', $payload)) $data['tujuan_pembelajaran'] = $payload['tujuan_pembelajaran'];
         if (isset($payload['mapel_id'])) $data['mapel_id'] = $payload['mapel_id'];
+        if (isset($payload['rombel_id'])) $data['rombel_id'] = $payload['rombel_id'];
+        if (isset($payload['status'])) $data['status'] = $payload['status'];
 
         $rpp->update($data);
+
+        // Process pertemuans updates (replace all for simplicity, or sync)
+        if (isset($payload['pertemuans'])) {
+            $pertemuans = json_decode($payload['pertemuans'], true);
+            if (is_array($pertemuans)) {
+                // Delete existing and recreate
+                $rpp->pertemuans()->delete();
+                foreach ($pertemuans as $p) {
+                    $rpp->pertemuans()->create([
+                        'pertemuan_ke' => $p['pertemuan_ke'] ?? null,
+                        'topik' => $p['topik'] ?? null,
+                        'kegiatan_pendahuluan' => $p['kegiatan_pendahuluan'] ?? null,
+                        'kegiatan_inti' => $p['kegiatan_inti'] ?? null,
+                        'kegiatan_penutup' => $p['kegiatan_penutup'] ?? null,
+                        'alokasi_waktu' => $p['alokasi_waktu'] ?? null,
+                    ]);
+                }
+            }
+        }
 
         $allFiles = $request->file('files') ?? [];
         if (!is_array($allFiles)) {
@@ -152,7 +199,7 @@ class RppController extends Controller
             }
         }
 
-        $rpp->load('files');
+        $rpp->load(['files', 'pertemuans']);
 
         return response()->json([
             'success' => true,
@@ -185,6 +232,25 @@ class RppController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'RPP berhasil dihapus'
+        ]);
+    }
+
+    public function updateStatus(Request $request, $id)
+    {
+        $rpp = Rpp::findOrFail($id);
+        
+        $request->validate([
+            'status' => 'required|in:draft,submitted,approved'
+        ]);
+
+        $rpp->update([
+            'status' => $request->status
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Status RPP berhasil diperbarui',
+            'data' => $rpp
         ]);
     }
 }
