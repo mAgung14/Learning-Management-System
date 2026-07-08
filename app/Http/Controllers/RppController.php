@@ -165,6 +165,15 @@ class RppController extends Controller
         }
 
         if (count($allFiles) > 0) {
+            // Hapus file lama jika ada upload file baru
+            foreach ($rpp->files as $oldFile) {
+                $relativePath = str_replace(asset('storage') . '/', '', $oldFile->url);
+                if (\Illuminate\Support\Facades\Storage::disk('public')->exists($relativePath)) {
+                    \Illuminate\Support\Facades\Storage::disk('public')->delete($relativePath);
+                }
+                $oldFile->delete();
+            }
+
             foreach ($allFiles as $file) {
                 $filename = time() . '_' . $file->getClientOriginalName();
                 $path = $file->storeAs('rpp_files', $filename, 'public');

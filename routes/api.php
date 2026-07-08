@@ -77,6 +77,7 @@ Route::middleware(['auth:api', 'role:admin,guru'])->group(function () {
     Route::get('/rombel/{rombel}', [RombelController::class, 'show'])->where('rombel', '[0-9]+');
     
     Route::apiResource('rpp', RppController::class);
+    Route::post('rpp/{id}', [RppController::class, 'update']);
 });
 
 Route::middleware(['auth:api', 'role:guru'])->group(function () {
