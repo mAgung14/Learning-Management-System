@@ -165,15 +165,6 @@ class RppController extends Controller
         }
 
         if (count($allFiles) > 0) {
-            // Hapus file lama jika ada upload file baru
-            foreach ($rpp->files as $oldFile) {
-                $relativePath = str_replace(asset('storage') . '/', '', $oldFile->url);
-                if (\Illuminate\Support\Facades\Storage::disk('public')->exists($relativePath)) {
-                    \Illuminate\Support\Facades\Storage::disk('public')->delete($relativePath);
-                }
-                $oldFile->delete();
-            }
-
             foreach ($allFiles as $file) {
                 $filename = time() . '_' . $file->getClientOriginalName();
                 $path = $file->storeAs('rpp_files', $filename, 'public');
@@ -244,6 +235,29 @@ class RppController extends Controller
             'success' => true,
             'message' => 'Status RPP berhasil diperbarui',
             'data' => $rpp
+        ]);
+    }
+
+    public function deleteFile($fileId)
+    {
+        $file = \App\Models\RppFile::find($fileId);
+        if (!$file) {
+            return response()->json([
+                'success' => false,
+                'message' => 'File tidak ditemukan'
+            ], 404);
+        }
+
+        $relativePath = str_replace(asset('storage') . '/', '', $file->url);
+        if (\Illuminate\Support\Facades\Storage::disk('public')->exists($relativePath)) {
+            \Illuminate\Support\Facades\Storage::disk('public')->delete($relativePath);
+        }
+
+        $file->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'File berhasil dihapus'
         ]);
     }
 }

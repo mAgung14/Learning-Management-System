@@ -76,6 +76,7 @@ Route::middleware(['auth:api', 'role:admin,guru'])->group(function () {
     Route::get('/rombel', [RombelController::class, 'index']);
     Route::get('/rombel/{rombel}', [RombelController::class, 'show'])->where('rombel', '[0-9]+');
     
+    Route::delete('rpp/files/{fileId}', [RppController::class, 'deleteFile']);
     Route::apiResource('rpp', RppController::class);
     Route::post('rpp/{id}', [RppController::class, 'update']);
 });
