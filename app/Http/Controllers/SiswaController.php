@@ -329,6 +329,16 @@ $siswa = Siswa::where('user_id', $user->id)->with('user:id,username,role')->firs
             ->orderBy('created_at', 'desc')
             ->get();
 
+        $rpps = \App\Models\Rpp::where('mapel_id', $id)
+            ->where('status', 'approved')
+            ->where(function ($q) use ($rombelIds) {
+                $q->whereNull('rombel_id')
+                    ->orWhereIn('rombel_id', $rombelIds);
+            })
+            ->with('files')
+            ->orderBy('created_at', 'desc')
+            ->get();
+
         $rombel = $mapel->rombel->first(function ($r) use ($rombelIds) {
             return in_array($r->id, $rombelIds);
         }) ?: $mapel->rombel->first();
@@ -365,6 +375,22 @@ $siswa = Siswa::where('user_id', $user->id)->with('user:id,username,role')->firs
                         return [
                             'id' => $file->id,
                             'tipe' => $file->tipe, // PDF, VIDEO, IMAGE, FILE, YOUTUBE
+                            'url' => $file->url,
+                            'nama_file' => $file->nama_file,
+                        ];
+                    }),
+                ];
+            }),
+            'rpp' => $rpps->map(function ($r) {
+                return [
+                    'id' => $r->id,
+                    'judul' => $r->judul,
+                    'status' => $r->status,
+                    'created_at' => $r->created_at,
+                    'files' => $r->files->map(function ($file) {
+                        return [
+                            'id' => $file->id,
+                            'tipe' => $file->tipe,
                             'url' => $file->url,
                             'nama_file' => $file->nama_file,
                         ];
