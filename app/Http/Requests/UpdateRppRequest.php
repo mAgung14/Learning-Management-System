@@ -23,6 +23,7 @@ class UpdateRppRequest extends FormRequest
             'is_published' => 'sometimes|boolean',
             'status' => 'sometimes|in:draft,submitted,approved',
             'pertemuans' => 'sometimes|json',
+            'file' => 'sometimes|file|mimes:pdf,doc,docx,xls,xlsx,ppt,pptx,zip,rar|max:20480',
             'files' => 'sometimes|array',
             'files.*' => 'file|mimes:pdf,doc,docx,xls,xlsx,ppt,pptx,zip,rar|max:20480',
         ];

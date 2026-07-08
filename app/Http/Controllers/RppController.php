@@ -77,6 +77,10 @@ class RppController extends Controller
             $allFiles = [$allFiles];
         }
 
+        if ($request->hasFile('file')) {
+            $allFiles[] = $request->file('file');
+        }
+
         foreach ($allFiles as $file) {
             $filename = time() . '_' . $file->getClientOriginalName();
             $path = $file->storeAs('rpp_files', $filename, 'public');
@@ -154,6 +158,10 @@ class RppController extends Controller
         $allFiles = $request->file('files') ?? [];
         if (!is_array($allFiles)) {
             $allFiles = [$allFiles];
+        }
+
+        if ($request->hasFile('file')) {
+            $allFiles[] = $request->file('file');
         }
 
         if (count($allFiles) > 0) {
