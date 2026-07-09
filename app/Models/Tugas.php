@@ -7,7 +7,12 @@ use Illuminate\Database\Eloquent\Model;
 class Tugas extends Model
 {
     protected $table = 'tugas';
-    protected $fillable = ['judul', 'deskripsi', 'deadline', 'mapel_id', 'guru_id', 'rombel_id'];
+    protected $fillable = ['judul', 'deskripsi', 'deadline', 'mapel_id', 'guru_id', 'rombel_id', 'rpp_id'];
+
+    public function rpp()
+    {
+        return $this->belongsTo(Rpp::class, 'rpp_id');
+    }
 
     public function pengumpulan()
     {

@@ -38,4 +38,9 @@ class Rpp extends Model
     {
         return $this->hasMany(RppPertemuan::class, 'rpp_id');
     }
+
+    public function tugas()
+    {
+        return $this->hasMany(Tugas::class, 'rpp_id');
+    }
 }

@@ -12,7 +12,7 @@ class TugasController extends Controller
     public function index(Request $request)
     {
         $user = auth()->user();
-        $query = Tugas::with(['pengumpulan', 'mapel']);
+        $query = Tugas::with(['pengumpulan', 'mapel', 'rpp:id,judul']);
 
         if ($user && $user->role === 'siswa') {
             $siswa = $user->siswa;
@@ -78,6 +78,7 @@ class TugasController extends Controller
                 'deadline' => 'required|date',
                 'mapel_id' => 'sometimes|exists:mata_pelajaran,id',
                 'rombel_id' => 'sometimes|nullable|exists:rombel,id',
+                'rpp_id' => 'nullable|exists:rpps,id',
             ]);
 
             // 🔥 ambil user login
@@ -141,6 +142,7 @@ class TugasController extends Controller
                 'mapel_id' => $mapel_id,
                 'rombel_id' => $rombel_id,
                 'guru_id' => $guru->id,
+                'rpp_id' => $payload['rpp_id'] ?? null,
             ]);
 
             return response()->json([
@@ -187,6 +189,7 @@ class TugasController extends Controller
             'mapelId' => 'sometimes|exists:mata_pelajaran,id',
             'guru_id' => 'sometimes|exists:users,id',
             'guruId' => 'sometimes|exists:users,id',
+            'rpp_id' => 'nullable|exists:rpps,id',
         ]);
 
         $data = [];
@@ -210,6 +213,9 @@ class TugasController extends Controller
         }
         if (isset($payload['guruId'])) {
             $data['guru_id'] = $payload['guruId'];
+        }
+        if (array_key_exists('rpp_id', $payload)) {
+            $data['rpp_id'] = $payload['rpp_id'];
         }
 
         if (isset($data['guru_id'])) {
