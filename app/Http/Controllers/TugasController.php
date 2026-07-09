@@ -71,6 +71,10 @@ class TugasController extends Controller
 
     public function store(Request $request)
     {
+        if ($request->rpp_id === 'null' || $request->rpp_id === '') {
+            $request->merge(['rpp_id' => null]);
+        }
+
         try {
             $payload = $request->validate([
                 'judul' => 'required|string|max:255',
@@ -179,6 +183,10 @@ class TugasController extends Controller
                     'message' => 'Akses ditolak. Anda bukan pembuat tugas ini.'
                 ], 403);
             }
+        }
+
+        if ($request->rpp_id === 'null' || $request->rpp_id === '') {
+            $request->merge(['rpp_id' => null]);
         }
 
         $payload = $request->validate([
