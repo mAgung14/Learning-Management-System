@@ -436,6 +436,7 @@ $siswa = Siswa::where('user_id', $user->id)->with('user:id,username,role')->firs
                 $q->whereNull('rombel_id')
                     ->orWhereIn('rombel_id', $rombelIds);
             })
+            ->with(['rpp:id,judul', 'files'])
             ->orderBy('deadline', 'asc')
             ->get();
 
@@ -449,6 +450,9 @@ $siswa = Siswa::where('user_id', $user->id)->with('user:id,username,role')->firs
                 'judul' => $t->judul,
                 'deskripsi' => $t->deskripsi,
                 'deadline' => $t->deadline,
+                'rpp_id' => $t->rpp_id,
+                'rpp' => $t->rpp,
+                'files' => $t->files,
                 'status_pengumpulan' => $pengumpulan ? 'Sudah dikumpulkan' : 'Belum dikumpulkan',
             ];
         });
@@ -481,7 +485,7 @@ $siswa = Siswa::where('user_id', $user->id)->with('user:id,username,role')->firs
 
         $rombelIds = $siswa->rombel()->pluck('rombel.id')->toArray();
 
-        $tugas = \App\Models\Tugas::with(['mapel.rombel.kelas', 'mapel.rombel.jurusan', 'guru'])->find($tugasId);
+        $tugas = \App\Models\Tugas::with(['mapel.rombel.kelas', 'mapel.rombel.jurusan', 'guru', 'files'])->find($tugasId);
 
         if (!$tugas) {
             return response()->json(['message' => 'Tugas tidak ditemukan.'], 404);
@@ -515,6 +519,7 @@ $siswa = Siswa::where('user_id', $user->id)->with('user:id,username,role')->firs
             'judul' => $tugas->judul,
             'deskripsi' => $tugas->deskripsi,
             'deadline' => $tugas->deadline,
+            'files' => $tugas->files,
             'nama_mapel' => $tugas->mapel->nama_mapel,
             'kelas' => trim(($rombelTugas->kelas->tingkat ?? '') . ' ' . ($rombelTugas->jurusan->nama_jurusan ?? '')),
             'guru' => $tugas->guru->nama ?? 'Unknown',

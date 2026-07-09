@@ -12,7 +12,7 @@ class TugasController extends Controller
     public function index(Request $request)
     {
         $user = auth()->user();
-        $query = Tugas::with(['pengumpulan', 'mapel', 'rpp:id,judul']);
+        $query = Tugas::with(['pengumpulan', 'mapel', 'rpp:id,judul', 'files']);
 
         if ($user && $user->role === 'siswa') {
             $siswa = $user->siswa;
@@ -83,6 +83,7 @@ class TugasController extends Controller
                 'mapel_id' => 'sometimes|exists:mata_pelajaran,id',
                 'rombel_id' => 'sometimes|nullable|exists:rombel,id',
                 'rpp_id' => 'nullable|exists:rpps,id',
+                'files.*' => 'nullable|file|max:10240',
             ]);
 
             // 🔥 ambil user login
@@ -149,10 +150,22 @@ class TugasController extends Controller
                 'rpp_id' => $payload['rpp_id'] ?? null,
             ]);
 
+            if ($request->hasFile('files')) {
+                foreach ($request->file('files') as $file) {
+                    $path = $file->store('lampiran_tugas', 'public');
+                    $namaAsli = $file->getClientOriginalName();
+                    
+                    $tugas->files()->create([
+                        'file_path' => $path,
+                        'file_name' => $namaAsli
+                    ]);
+                }
+            }
+
             return response()->json([
                 'success' => true,
                 'message' => 'Tugas berhasil dibuat',
-                'data' => $tugas->load(['guru']),
+                'data' => $tugas->load(['guru', 'files']),
             ], 201);
 
         } catch (\Exception $e) {
@@ -166,7 +179,7 @@ class TugasController extends Controller
     public function show($id)
     {
         return response()->json([
-            'data' => Tugas::with(['pengumpulan'])->findOrFail($id)
+            'data' => Tugas::with(['pengumpulan', 'files'])->findOrFail($id)
         ]);
     }
 
@@ -198,6 +211,7 @@ class TugasController extends Controller
             'guru_id' => 'sometimes|exists:users,id',
             'guruId' => 'sometimes|exists:users,id',
             'rpp_id' => 'nullable|exists:rpps,id',
+            'files.*' => 'nullable|file|max:10240',
         ]);
 
         $data = [];
@@ -237,9 +251,21 @@ class TugasController extends Controller
 
         $tugas->update($data);
 
+        if ($request->hasFile('files')) {
+            foreach ($request->file('files') as $file) {
+                $path = $file->store('lampiran_tugas', 'public');
+                $namaAsli = $file->getClientOriginalName();
+                
+                $tugas->files()->create([
+                    'file_path' => $path,
+                    'file_name' => $namaAsli
+                ]);
+            }
+        }
+
         return response()->json([
             'message' => 'Tugas berhasil diupdate',
-            'data' => $tugas,
+            'data' => $tugas->load('files'),
         ]);
     }
 
@@ -447,6 +473,32 @@ class TugasController extends Controller
             'success' => true,
             'message' => 'Nilai berhasil disimpan',
             'data' => $nilai
+        ]);
+    }
+
+    public function deleteFile($file_id)
+    {
+        $user = auth()->user();
+        if (!$user || $user->role !== 'guru') {
+            return response()->json(['message' => 'Unauthorized. Hanya guru yang dapat menghapus file.'], 403);
+        }
+
+        $file = \App\Models\TugasFile::find($file_id);
+        if (!$file) {
+            return response()->json(['message' => 'File tidak ditemukan.'], 404);
+        }
+
+        $tugas = $file->tugas;
+        if ($tugas->guru_id !== $user->guru->id) {
+            return response()->json(['message' => 'Akses ditolak. Anda bukan pembuat tugas ini.'], 403);
+        }
+
+        \Illuminate\Support\Facades\Storage::disk('public')->delete($file->file_path);
+        $file->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'File berhasil dihapus'
         ]);
     }
 }

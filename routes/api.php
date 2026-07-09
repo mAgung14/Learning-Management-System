@@ -94,6 +94,7 @@ Route::middleware(['auth:api', 'role:guru'])->group(function () {
     Route::get('tugas/{id}/pengumpulan', [TugasController::class, 'pengumpulanByTugas']);
     Route::post('pengumpulan/{pengumpulanId}/nilai', [TugasController::class, 'berikanNilai']);
     Route::apiResource('tugas-susulan', \App\Http\Controllers\TugasSusulanController::class)->only(['index', 'store', 'destroy']);
+    Route::delete('tugas/files/{fileId}', [TugasController::class, 'deleteFile']);
     Route::apiResource('tugas', TugasController::class);
 
 });

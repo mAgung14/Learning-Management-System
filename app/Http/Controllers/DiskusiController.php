@@ -12,12 +12,6 @@ use App\Events\MessageDeleted;
 
 class DiskusiController extends Controller
 {
-    /**
-     * Get chat messages for a specific mapel.
-     * 
-     * @tags Diskusi Mapel
-     * @response array{status: string, data: list<Diskusi>}
-     */
     public function index($mapel_id)
     {
         $mapel = MataPelajaran::findOrFail($mapel_id);
